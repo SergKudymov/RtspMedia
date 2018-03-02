@@ -43,6 +43,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Media.Common;
+using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
+using Media.Rtp;
 
 #endregion
 namespace Media.Rtcp
@@ -92,7 +95,7 @@ namespace Media.Rtcp
             while (remains >= RtcpHeader.Length)
             {
                 //Get the header of the packet to verify if it is wanted or not
-                using (var header = new RtcpHeader(new Common.MemorySegment(array, offset, remains, shouldDispose), shouldDispose))
+                using (var header = new RtcpHeader(new MemorySegment(array, offset, remains, shouldDispose), shouldDispose))
                 {
                     //Determine how long the header was
                     int headerSize = header.Size;
@@ -441,7 +444,7 @@ namespace Media.Rtcp
         }
 
         /// <summary>
-        /// <see cref="RtpHeader.Version"/>
+        /// <see cref="System.Version"/>
         /// </summary>
         public int Version
         {
@@ -790,7 +793,7 @@ namespace Media.Rtcp
                 //Read from the stream, decrementing from octetsRemaining what was read.
                 while (octetsRemaining > 0)
                 {
-                    int rec = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
+                    int rec = SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
                     offset += rec;
                     octetsRemaining -= rec;
                     recieved += rec;
@@ -893,7 +896,7 @@ namespace Media.Rtcp
             foreach (System.Reflection.Assembly assembly in (domain ?? AppDomain.CurrentDomain).GetAssemblies())
             {
                 try { Types = assembly.GetTypes(); }
-                catch { if(breakOnError) Common.Extensions.Debug.DebugExtensions.BreakIfAttached(); continue; }
+                catch { if(breakOnError) DebugExtensions.BreakIfAttached(); continue; }
 
                 //Iterate each derived type which is a SubClassOf RtcpPacket.
                 foreach (System.Type derivedType in Types.Where(t => t.IsSubclassOf(RtcpPacketType)))
@@ -955,10 +958,10 @@ namespace Media.Rtcp
             object.ReferenceEquals(implementation, null).Equals(false) &&
             implementation.IsAbstract.Equals(false) &&
             implementation.IsSubclassOf(RtcpPacketType)
-                ? Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryAdd(ImplementationMap, payloadType, implementation, out any) : false;
+                ? DictionaryExtensions.TryAdd(ImplementationMap, payloadType, implementation, out any) : false;
         }
 
-        internal static bool TryUnMapImplementation(byte payloadType, out Type implementation) { implementation = null; Exception any; return payloadType > default(byte) && Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryRemove(ImplementationMap, payloadType, out implementation, out any); }
+        internal static bool TryUnMapImplementation(byte payloadType, out Type implementation) { implementation = null; Exception any; return payloadType > default(byte) && DictionaryExtensions.TryRemove(ImplementationMap, payloadType, out implementation, out any); }
 
         #endregion
 

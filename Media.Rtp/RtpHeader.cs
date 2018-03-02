@@ -43,6 +43,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Media.Common;
+using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 
 #endregion
 
@@ -331,7 +333,7 @@ namespace Media.Rtp
             long octetsLength;
 
             //If the octets reference is null throw an exception
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(octets, out octetsLength)) throw new ArgumentException("octets must not be null and must contain at least 1 element given the deleniation of the offset parameter.", "octets");
+            if (ArrayExtensions.IsNullOrEmpty(octets, out octetsLength)) throw new ArgumentException("octets must not be null and must contain at least 1 element given the deleniation of the offset parameter.", "octets");
 
             //Check range
             if (offset > octetsLength) throw new ArgumentOutOfRangeException("offset", "Cannot be greater than the length of octets");

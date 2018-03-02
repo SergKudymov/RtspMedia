@@ -44,6 +44,11 @@ using System.Net.Sockets;
 using Media.Rtsp.Server.MediaTypes;
 using System.Threading;
 using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
+using Media.Rtcp;
+using Media.Rtp;
+using Media.Rtp.Rtcp;
+using WaitHandleExtensions = Media.Common.Extensions.WaitHandleExtensions;
 
 namespace Media.Rtsp//.Server
 {
@@ -388,7 +393,7 @@ namespace Media.Rtsp//.Server
                     {
                         WaitHandle wait = LastRecieve.AsyncWaitHandle;
 
-                        Media.Common.Extensions.WaitHandle.WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
+                        WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
                     }
                 }
 
@@ -421,7 +426,7 @@ namespace Media.Rtsp//.Server
 
             int check;
             //Check for no data or 0 length when sharing socket.
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(data, out check) ||
+            if (ArrayExtensions.IsNullOrEmpty(data, out check) ||
                 length - offset > check ||
                 (length.Equals(Common.Binary.Zero) && SharesSocket)) return;
 
@@ -440,7 +445,7 @@ namespace Media.Rtsp//.Server
                         {
                             WaitHandle wait = LastSend.AsyncWaitHandle;
 
-                            Media.Common.Extensions.WaitHandle.WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
+                            WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
                         }
                         else if (false.Equals(IsDisconnected) && m_RtspSocket.Poll(m_SocketPollMicroseconds, SelectMode.SelectRead))
                         {
@@ -448,7 +453,7 @@ namespace Media.Rtsp//.Server
 
                             WaitHandle wait = LastRecieve.AsyncWaitHandle;
 
-                            Media.Common.Extensions.WaitHandle.WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
+                            WaitHandleExtensions.TryWaitOnHandleAndDispose(ref wait);
                         }
                     }
                 }
@@ -659,7 +664,7 @@ namespace Media.Rtsp//.Server
 
             bool shouldDispose = packet.ShouldDispose;
 
-            if(shouldDispose) Common.BaseDisposable.SetShouldDispose(packet, false, false);
+            if(shouldDispose) BaseDisposable.SetShouldDispose(packet, false, false);
 
             //If this is a senders report.
             if (packet.PayloadType == Rtcp.SendersReport.PayloadType)
@@ -683,7 +688,7 @@ namespace Media.Rtsp//.Server
                     //Most senders don't use blocks anyway...
                     if (sr.BlockCount > 0)
                     {
-                        Rtcp.IReportBlock reportBlock = sr.FirstOrDefault(rb => rb.BlockIdentifier == tc.RemoteSynchronizationSourceIdentifier);
+                        IReportBlock reportBlock = sr.FirstOrDefault(rb => rb.BlockIdentifier == tc.RemoteSynchronizationSourceIdentifier);
 
                         if (object.ReferenceEquals(reportBlock, null).Equals(false))
                         {
@@ -702,7 +707,7 @@ namespace Media.Rtsp//.Server
 
             }
 
-            if(shouldDispose) Common.BaseDisposable.SetShouldDispose(packet, true, false);
+            if(shouldDispose) BaseDisposable.SetShouldDispose(packet, true, false);
 
             //Could send reports right now to ensure the clients of this stream gets the time from the source ASAP
             //m_RtpClient.SendReports();
@@ -1360,7 +1365,7 @@ namespace Media.Rtsp//.Server
                     //    if (remoteSsrc != 0 && setupContext.RemoteSynchronizationSourceIdentifier != remoteSsrc) setupContext.RemoteSynchronizationSourceIdentifier = remoteSsrc;
                     //}
 
-                    multicast = Media.Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(((IPEndPoint)setupContext.RemoteRtp).Address);
+                    multicast = IPAddressExtensions.IsMulticast(((IPEndPoint)setupContext.RemoteRtp).Address);
 
                     interleaved = setupContext.RtpSocket.ProtocolType == ProtocolType.Tcp && SharesSocket;
 
@@ -1403,11 +1408,11 @@ namespace Media.Rtsp//.Server
 
                 //QuickTime debug
 
-                if (clientRtpPort.Equals(0)) clientRtpPort = Media.Common.Extensions.Socket.SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, 30000, true);
+                if (clientRtpPort.Equals(0)) clientRtpPort = SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, 30000, true);
 
                 if (clientRtcpPort.Equals(0)) clientRtcpPort = clientRtpPort + 1;
 
-                if (serverRtpPort.Equals(0)) serverRtpPort = Media.Common.Extensions.Socket.SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, 30000, true);
+                if (serverRtpPort.Equals(0)) serverRtpPort = SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, 30000, true);
 
                 if (serverRtcpPort.Equals(0)) serverRtcpPort = serverRtpPort + 1;
 
@@ -1423,9 +1428,9 @@ namespace Media.Rtsp//.Server
 
                 IPAddress localAddress = ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address;
 
-                Socket tempRtp = Media.Common.Extensions.Socket.SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, localAddress, clientRtpPort);
+                Socket tempRtp = SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, localAddress, clientRtpPort);
 
-                Socket tempRtcp = Media.Common.Extensions.Socket.SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, localAddress, clientRtcpPort);
+                Socket tempRtcp = SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, localAddress, clientRtcpPort);
 
                 //Check if the client was already created.
                 if (Common.IDisposedExtensions.IsNullOrDisposed(m_RtpClient))
@@ -2121,7 +2126,7 @@ namespace Media.Rtsp//.Server
         internal Sdp.SessionDescription CreateSessionDescription(Media.Rtsp.Server.IMedia stream)
         {
             //Todo, NullOrDisposedException,
-            if (Common.IDisposedExtensions.IsNullOrDisposed(stream)) throw new Media.Common.Extensions.Exception.ExceptionExtensions.ArgumentNullOrDisposedException("stream", stream);
+            if (Common.IDisposedExtensions.IsNullOrDisposed(stream)) throw new ExceptionExtensions.ArgumentNullOrDisposedException("stream", stream);
             //else if (SessionDescription != null) throw new NotImplementedException("There is already a m_SessionDescription for this session, updating is not implemented at this time");
 
             string addressString = ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address.ToString();

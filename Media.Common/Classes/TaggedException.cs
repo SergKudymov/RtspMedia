@@ -38,6 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 using System;
 using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 
 namespace Media.Common.Classes
 { 
@@ -223,10 +224,10 @@ namespace Media.Common.Classes
             catch //Handle it
             {
                 //If the debugger is not attached and it cannot be then return
-                if (false.Equals(Common.Extensions.Debug.DebugExtensions.Attach())) return;
+                if (false.Equals(DebugExtensions.Attach())) return;
 
                 //Break if still attached
-                Common.Extensions.Debug.DebugExtensions.BreakIfAttached();
+                DebugExtensions.BreakIfAttached();
             }
         }
 

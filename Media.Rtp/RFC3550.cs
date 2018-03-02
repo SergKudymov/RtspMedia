@@ -44,6 +44,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Media.Common.Classes;
+using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
+using Media.Cryptography;
+using Media.Rtp;
 using Media.Rtp.Rtcp;
 
 #endregion
@@ -98,7 +103,7 @@ namespace Media
             //Perform MD5 on structure per 3550
             byte[] digest;
 
-            digest = Cryptography.MD5.GetHash(structure);
+            digest = MD5.GetHash(structure);
 
             //Complete hash
             uint r = 0;
@@ -352,7 +357,7 @@ namespace Media
                     if (false == hasCName && currentPacket.BlockCount > 0) using (SourceDescriptionReport asReport = new SourceDescriptionReport(currentPacket, false)) if ((hasCName = asReport.HasCName)) break;
                 }
 
-                if (hasSourceDescription && false == hasCName) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(currentPacket, "Invalid compound data, Source Description report did not have a CName SourceDescriptionItem.");
+                if (hasSourceDescription && false == hasCName) TaggedExceptionExtensions.RaiseTaggedException(currentPacket, "Invalid compound data, Source Description report did not have a CName SourceDescriptionItem.");
 
                 yield return currentPacket;
             }
@@ -440,7 +445,7 @@ namespace Media
         {
             if (amount <= 0) return Enumerable.Empty<byte>();
             if (amount > byte.MaxValue) Common.Binary.CreateOverflowException("amount", amount, byte.MinValue.ToString(), byte.MaxValue.ToString());
-            return Enumerable.Concat(Enumerable.Repeat(default(byte), amount - 1), Media.Common.Extensions.Linq.LinqExtensions.Yield(((byte)amount)));
+            return Enumerable.Concat(Enumerable.Repeat(default(byte), amount - 1), LinqExtensions.Yield(((byte)amount)));
         }
 
         #endregion
@@ -1404,7 +1409,7 @@ namespace Media
 
             [CLSCompliant(false)]
             [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-            public SourceList(uint ssrc) : this(Media.Common.Extensions.Linq.LinqExtensions.Yield(ssrc)) { }
+            public SourceList(uint ssrc) : this(LinqExtensions.Yield(ssrc)) { }
 
             /// <summary>
             /// Copies Data

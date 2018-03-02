@@ -38,13 +38,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Media.Common.Classes.Loggers;
 
 namespace Media.Rtsp.Server
 {
     /// <summary>
     /// Provides a base class around the concept of a logger specifically designed for the RtspServer.
     /// </summary>
-    public abstract class RtspServerLogger : Common.Loggers.BaseLogger
+    public abstract class RtspServerLogger : BaseLogger
     {
         internal abstract void LogRequest(RtspMessage request, ClientSession session);
 

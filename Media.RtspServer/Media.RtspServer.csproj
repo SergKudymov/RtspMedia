@@ -89,12 +89,37 @@
     <Compile Include="RtspStreamArchiver.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\AboutResources.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Media.Common\Media.Common.csproj">
       <Project>{BD0A85B0-60E1-4CB8-AA7A-CC73708059F1}</Project>
       <Name>Media.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Cryptography\Media.Cryptography.csproj">
+      <Project>{986ffb7c-6ca1-47b0-a0eb-1246d89c8954}</Project>
+      <Name>Media.Cryptography</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Http\Media.Http.csproj">
+      <Project>{7C8DBDC2-6386-49B2-9304-5826690ECFFE}</Project>
+      <Name>Media.Http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.RtpTools\Media.RtpTools.csproj">
+      <Project>{3ec39c45-bad0-460c-8e71-26bae4ca94da}</Project>
+      <Name>Media.RtpTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Rtp\Media.Rtp.csproj">
+      <Project>{1D01A7C6-D183-4F9A-BD17-D5F62F0FE5F9}</Project>
+      <Name>Media.Rtp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Rtsp\Media.Rtsp.csproj">
+      <Project>{1E5CC326-43B5-4713-932E-0D467F236FB9}</Project>
+      <Name>Media.Rtsp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Sdp\Media.Sdp.csproj">
+      <Project>{3E390A6B-6509-41E9-A484-B398400667B0}</Project>
+      <Name>Media.Sdp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

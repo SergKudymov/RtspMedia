@@ -38,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 using Media.Common.Classes.Text;
 
-namespace Media.Common.Extensions.String
+namespace Media.Common.Extensions
 {
     public static class StringExtensions
     {
@@ -105,7 +105,7 @@ namespace Media.Common.Extensions.String
                     //Todo, Native and Unsafe
 
                     //Convert 2 Chars to a byte
-                    result = System.Linq.Enumerable.Concat(result, Media.Common.Extensions.Linq.LinqExtensions.Yield((byte)(HexCharToByte(str[i]) << 4 | HexCharToByte(str[i + 1]))));
+                    result = System.Linq.Enumerable.Concat(result, LinqExtensions.Yield((byte)(HexCharToByte(str[i]) << 4 | HexCharToByte(str[i + 1]))));
                 }
 
                 //Dont use a List..
@@ -173,7 +173,7 @@ namespace Media.Common.Extensions.String
         //IsNonCharacterPalindrome() => only non letters or digits are checked
 
         /// <summary>
-        /// See <see cref="Media.Common.Extensions.String.StringExtensions.HexStringToBytes"/>
+        /// See <see cref="HexStringToBytes"/>
         /// </summary>
         /// <param name="hex"></param>
         /// <returns></returns>
@@ -232,7 +232,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrim(this string ex, string[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
 
             string[] results = ex.Split(seperator, count, options);
 
@@ -244,7 +244,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrim(this string ex, char[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[0];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[0];
 
             string[] results = ex.Split(seperator, count, options);
 
@@ -256,7 +256,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrimEnd(this string ex, string[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
 
             string[] results = ex.Split(seperator, count, options);
 
@@ -268,7 +268,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrimEnd(this string ex, char[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
 
             string[] results = ex.Split(seperator, count, options);
 
@@ -280,7 +280,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrimStart(this string ex, string[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
 
             string[] results = ex.Split(seperator, count, options);
 
@@ -292,7 +292,7 @@ namespace Media.Common.Extensions.String
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static string[] SplitTrimStart(this string ex, char[] seperator, int count, System.StringSplitOptions options)
         {
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(seperator)) return new string[Common.Binary.Zero];
 
             string[] results = ex.Split(seperator, count, options);
 

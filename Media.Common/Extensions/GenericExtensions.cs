@@ -4,7 +4,7 @@
 //http://stackoverflow.com/questions/2173107/what-exactly-is-an-open-generic-type-in-net
 #endregion
 
-namespace Media.Common.Extensions.Generic
+namespace Media.Common.Extensions
 {
     /// <summary>
     /// Provides extensions method for generic types.

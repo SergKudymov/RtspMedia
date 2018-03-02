@@ -36,14 +36,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.Generic.Dictionary
-{
-    using System;
-    using System.Collections.Generic;
+using System.Collections.Generic;
 
+namespace Media.Common.Extensions
+{
     public static class DictionaryExtensions
     {
-        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, ref TValue value, out Exception any)
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, ref TValue value, out System.Exception any)
         {
             any = null;
 
@@ -59,7 +58,7 @@ namespace Media.Common.Extensions.Generic.Dictionary
                 //Indicate success
                 return true;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 //Assign the exception
                 any = ex;
@@ -69,9 +68,9 @@ namespace Media.Common.Extensions.Generic.Dictionary
             }
         }
 
-        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value, out Exception any) { return TryAdd(dictionary, ref key, ref value, out any); }
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue value, out System.Exception any) { return TryAdd(dictionary, ref key, ref value, out any); }
 
-        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, out Exception any)
+        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, out System.Exception any)
         {
             any = null;
 
@@ -80,7 +79,7 @@ namespace Media.Common.Extensions.Generic.Dictionary
                 //Attempt to remove
                 return dictionary.Remove(key);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 //Assign the exception
                 any = ex;
@@ -90,7 +89,7 @@ namespace Media.Common.Extensions.Generic.Dictionary
             }
         }
 
-        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, out TValue value, out Exception any)
+        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, out TValue value, out System.Exception any)
         {
             any = null;
 
@@ -108,7 +107,7 @@ namespace Media.Common.Extensions.Generic.Dictionary
                 return false;
 
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 //Assign the exception
                 any = ex;
@@ -118,23 +117,23 @@ namespace Media.Common.Extensions.Generic.Dictionary
             }
         }
 
-        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out Exception any) { return TryRemove(dictionary, ref key, out any); }
+        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out System.Exception any) { return TryRemove(dictionary, ref key, out any); }
 
         public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key)
         {
-            Exception any; 
+            System.Exception any; 
             
             return TryRemove(dictionary, ref key, out any);
         }
 
         public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out TValue value) { return TryRemove(dictionary, ref key, out value); }
         
-        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out TValue value, out Exception any)
+        public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, out TValue value, out System.Exception any)
         { return TryRemove(dictionary, ref key, out value, out any); }
 
         public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, ref TKey key, out TValue value)
         {
-            Exception ex;
+            System.Exception ex;
 
             return TryRemove(dictionary, key, out value, out ex);
         }

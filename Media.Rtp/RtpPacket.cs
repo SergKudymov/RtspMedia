@@ -42,6 +42,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Media.Common;
+using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 
 #endregion
 
@@ -142,7 +144,7 @@ namespace Media.Rtp
         /// <summary>
         /// Indicates if the RtpPacket is formatted in a complaince to RFC3550 and that all data required to read the RtpPacket is available.
         /// This is dertermined by performing checks against the RtpHeader and data in the Payload to validate the SouceList and Extension if present.
-        /// <see cref="SourceList"/> and <see cref="RtpExtension"/> for further information.
+        /// <see cref="RFC3550.SourceList"/> and <see cref="RtpExtension"/> for further information.
         /// </summary>
         public bool IsComplete
         {
@@ -553,7 +555,7 @@ namespace Media.Rtp
 
         /// <summary>
         /// Gets an Enumerator which can be used to read the contribuing sources contained in this RtpPacket.
-        /// <see cref="SourceList"/> for more information.
+        /// <see cref="RFC3550.SourceList"/> for more information.
         /// </summary>
         public Media.RFC3550.SourceList GetSourceList() { if (IsDisposed) return null; return new Media.RFC3550.SourceList(this); }
 
@@ -590,7 +592,7 @@ namespace Media.Rtp
             if (includeSourceList && hasSourceList)
             {
                 RFC3550.SourceList sourceList = GetSourceList();
-                if (false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(sourceList))) binarySequence = sourceList.GetBinaryEnumerable();
+                if (false.Equals(IDisposedExtensions.IsNullOrDisposed(sourceList))) binarySequence = sourceList.GetBinaryEnumerable();
                 else binarySequence = Media.Common.MemorySegment.EmptyBytes;
             }
 
@@ -713,7 +715,7 @@ namespace Media.Rtp
                 while (octetsRemaining > 0)
                 {
                     //Receive octetsRemaining or less
-                    int justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
+                    int justReceived = SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
 
                     //Move the offset
                     offset += justReceived;
@@ -749,7 +751,7 @@ namespace Media.Rtp
                     while (octetsRemaining > 0)
                     {
                         //Receive octetsRemaining or less
-                        int justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
+                        int justReceived = SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
 
                         //Move the offset
                         offset += justReceived;
@@ -787,7 +789,7 @@ namespace Media.Rtp
                             while (octetsRemaining > 0)
                             {
                                 //Receive octetsRemaining or less
-                                int justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
+                                int justReceived = SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
 
                                 //Move the offset
                                 offset += justReceived;
@@ -825,7 +827,7 @@ namespace Media.Rtp
 
                         //Receive 1 byte
                         //Receive octetsRemaining or less
-                        int justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
+                        int justReceived = SocketExtensions.AlignedReceive(m_OwnedOctets, offset, octetsRemaining, socket, out error);
 
                         //Move the offset
                         offset += justReceived;

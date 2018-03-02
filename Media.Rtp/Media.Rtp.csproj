@@ -79,9 +79,17 @@
       <Project>{BD0A85B0-60E1-4CB8-AA7A-CC73708059F1}</Project>
       <Name>Media.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Media.Cryptography\Media.Cryptography.csproj">
+      <Project>{986ffb7c-6ca1-47b0-a0eb-1246d89c8954}</Project>
+      <Name>Media.Cryptography</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Media.Ntp\Media.Ntp.csproj">
       <Project>{BFCD4B0A-17B3-4FF1-B93C-CA7C9CEAF322}</Project>
       <Name>Media.Ntp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Media.Sdp\Media.Sdp.csproj">
+      <Project>{3E390A6B-6509-41E9-A484-B398400667B0}</Project>
+      <Name>Media.Sdp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

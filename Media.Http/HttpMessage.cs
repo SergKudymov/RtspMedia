@@ -7,6 +7,7 @@ using Media.Common;
 using Media.Common.Classes;
 using Media.Common.Classes.Disposables;
 using Media.Common.Classes.Text;
+using Media.Common.Extensions;
 using Enum = System.Enum;
 
 namespace Media.Http
@@ -93,7 +94,7 @@ namespace Media.Http
         {
             if (includeSpaces.Equals(false)) return code.ToString();
 
-            return Common.Extensions.String.StringExtensions.AddSpacesBeforeCapitols(code.ToString());
+            return StringExtensions.AddSpacesBeforeCapitols(code.ToString());
         }
     }
 
@@ -157,7 +158,7 @@ namespace Media.Http
             foreach (var content in contents)
             {
                 //Don't append null items or items without any data
-                if (content == null || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(content.Item4)) continue;
+                if (content == null || ArrayExtensions.IsNullOrEmpty(content.Item4)) continue;
 
                 //Output Headers of Content part
 
@@ -503,9 +504,9 @@ namespace Media.Http
 
                     int lineEndsLength, whitespaceLength;
 
-                    Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(m_EncodedLineEnds, out lineEndsLength);
+                    ArrayExtensions.IsNullOrEmpty(m_EncodedLineEnds, out lineEndsLength);
 
-                    Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(m_EncodedWhiteSpace, out whitespaceLength);
+                    ArrayExtensions.IsNullOrEmpty(m_EncodedWhiteSpace, out whitespaceLength);
 
                     if (lineEndsLength + whitespaceLength <= 0) return 0;
 
@@ -2718,7 +2719,7 @@ namespace Media.Http
                     while (remaining > 0)
                     {
                         //Receive remaining more if there is a socket otherwise use the remaining data in the buffer when no socket is given.
-                        justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(buffer.Array, offset, remaining, socket, out error);
+                        justReceived = SocketExtensions.AlignedReceive(buffer.Array, offset, remaining, socket, out error);
 
                         //If anything was present then add it to the body.
                         if (justReceived > 0)

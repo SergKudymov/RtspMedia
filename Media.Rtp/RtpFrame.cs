@@ -37,13 +37,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Media.Common.Classes.Disposables;
 
 namespace Media.Rtp
 {
     /// <summary>
     /// A collection of RtpPackets
     /// </summary>
-    public class RtpFrame : Media.Common.SuppressedFinalizerDisposable, IEnumerable<RtpPacket>// IDictionary, IList, etc? IClonable
+    public class RtpFrame : SuppressedFinalizerDisposable, IEnumerable<RtpPacket>// IDictionary, IList, etc? IClonable
     {
         //Todo, should be Lifetime Disposable        (Where Lifetime is given by expected duration + connection time by default or 1 Minute)
 
@@ -174,7 +175,7 @@ namespace Media.Rtp
             //Au 0, 2, 4
 
         //Packetization and Depacketization structure for internal use.
-        internal class PaD : Common.BaseDisposable
+        internal class PaD : BaseDisposable
         {
             #region Fields
 
@@ -1391,7 +1392,7 @@ namespace Media.Rtp
             {
                 //Set ShouldDispose = true and call Dispose.
                 if (force || pair.Value.ShouldDispose)
-                    Common.BaseDisposable.SetShouldDispose(pair.Value, true, false);
+                    BaseDisposable.SetShouldDispose(pair.Value, true, false);
             }
 
             //Ensure cleared.

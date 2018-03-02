@@ -1,4 +1,6 @@
-﻿namespace Media.Rtp
+﻿using Media.Common.Extensions;
+
+namespace Media.Rtp
 {
     //Todo, determine if this belongs in another assembly once the ProfileInformation aspect is complete.
 
@@ -145,7 +147,7 @@
 
             int packetsLength;
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(packets, out packetsLength)) return null;
+            if (ArrayExtensions.IsNullOrEmpty(packets, out packetsLength)) return null;
 
             //4 byte headers are only needed if there are more than 1 packet.
             int headersNeeded = packetsLength - 1;

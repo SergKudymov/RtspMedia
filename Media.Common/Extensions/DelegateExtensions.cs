@@ -35,10 +35,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * v//
  */
 #endregion
-namespace Media.Common.Extensions.Delegate
-{
-    using System.Linq;
 
+using System.Linq;
+
+namespace Media.Common.Extensions
+{
     /// <summary>
     /// Provides extension methods which are useful for working with delegates
     /// </summary>
@@ -78,7 +79,7 @@ namespace Media.Common.Extensions.Delegate
         {
             if (method == null) throw new System.ArgumentNullException("method");
 
-            return method.CreateDelegate(System.Linq.Expressions.Expression.GetDelegateType(method.GetParameters().Select(p => p.ParameterType).Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(method.ReturnType)).ToArray()));
+            return method.CreateDelegate(System.Linq.Expressions.Expression.GetDelegateType(method.GetParameters().Select(p => p.ParameterType).Concat(LinqExtensions.Yield(method.ReturnType)).ToArray()));
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -90,7 +91,7 @@ namespace Media.Common.Extensions.Delegate
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static void AppendTo<T>(this System.Delegate newDel, ref T baseDel) where T : class
         {
-            baseDel = Common.Extensions.Generic.GenericExtensions.As<System.Delegate, T>(newDel);
+            baseDel = GenericExtensions.As<System.Delegate, T>(newDel);
             T oldBaseDel, newBaseDel;
             do
             {
@@ -102,7 +103,7 @@ namespace Media.Common.Extensions.Delegate
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static void SubtractFrom<T>(this System.Delegate newDel, ref T baseDel) where T : class
         {
-            baseDel = Common.Extensions.Generic.GenericExtensions.As<System.Delegate, T>(newDel);
+            baseDel = GenericExtensions.As<System.Delegate, T>(newDel);
             T oldBaseDel, newBaseDel;
             do
             {

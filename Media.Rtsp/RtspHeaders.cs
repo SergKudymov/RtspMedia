@@ -42,6 +42,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Media.Common.Classes;
+using Media.Common.Classes.Text;
+using Media.Http;
+using Media.Sdp;
+
 #endregion
 
 namespace Media.Rtsp
@@ -50,7 +55,7 @@ namespace Media.Rtsp
     /// Header Definitions from RFC2326
     /// https://tools.ietf.org/html/rfc2326
     /// </summary>
-    public sealed class RtspHeaders : Http.HttpHeaders
+    public sealed class RtspHeaders : HttpHeaders
     {
         public const string CSeq = "CSeq";
 
@@ -124,9 +129,9 @@ namespace Media.Rtsp
         /// <returns></returns>
         public static bool TryParseRange(string value, out string type, out TimeSpan start, out TimeSpan end)
         {
-            foreach (string part in value.Split((char)Common.ASCII.SemiColon))
+            foreach (string part in value.Split((char)ASCII.SemiColon))
             {
-                if(Media.Sdp.SessionDescription.TryParseRange(value, out type, out start, out end)) return true;
+                if(SessionDescription.TryParseRange(value, out type, out start, out end)) return true;
             }
 
             type = string.Empty;
@@ -148,13 +153,13 @@ namespace Media.Rtsp
         public new static string RangeHeader(TimeSpan? start, TimeSpan? end, string type = "npt", string timePart = null)
         {
             return type +
-                ((char)Common.ASCII.EqualsSign).ToString() +
+                ((char)ASCII.EqualsSign).ToString() +
                 (start.HasValue && end.HasValue && end.Value != Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan ?
                 start.Value.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture) : "now") +
                 '-' +
                 (end.HasValue && end.Value > TimeSpan.Zero ?
                 end.Value.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty) +
-                (false == string.IsNullOrWhiteSpace(timePart) ? (((char)Common.ASCII.SemiColon).ToString() + timePart) : string.Empty);
+                (false == string.IsNullOrWhiteSpace(timePart) ? (((char)ASCII.SemiColon).ToString() + timePart) : string.Empty);
         }
 
         public new static string BasicAuthorizationHeader(Encoding encoding, System.Net.NetworkCredential credential) { return AuthorizationHeader(encoding, RtspMethod.UNKNOWN, null, System.Net.AuthenticationSchemes.Basic, credential); }
@@ -206,7 +211,7 @@ namespace Media.Rtsp
 
                 for (int i = 0, e = parts.Length; i < e; ++i)
                 {
-                    string[] subParts = parts[i].Split((char)Common.ASCII.EqualsSign);
+                    string[] subParts = parts[i].Split((char)ASCII.EqualsSign);
 
                     switch (subParts[0].ToLowerInvariant())
                     {
@@ -293,12 +298,12 @@ namespace Media.Rtsp
                             {
                                 if (false == int.TryParse(subParts[1].Trim(), out ttl))
                                 {
-                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(ttl, "See Tag. Cannot Parse a ttl datum as given.");
+                                    TaggedExceptionExtensions.RaiseTaggedException(ttl, "See Tag. Cannot Parse a ttl datum as given.");
                                 }
 
                                 //Could just clamp.
                                 if (ttl < byte.MinValue || ttl > byte.MaxValue) 
-                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(ttl, "See Tag. Invalid ttl datum as given.");
+                                    TaggedExceptionExtensions.RaiseTaggedException(ttl, "See Tag. Invalid ttl datum as given.");
 
                                 continue;
                             }
@@ -309,7 +314,7 @@ namespace Media.Rtsp
                                 if (false == int.TryParse(ssrcPart, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out ssrc) &&
                                     false == int.TryParse(ssrcPart, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out ssrc))
                                 {
-                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(ssrcPart, "See Tag. Cannot Parse a ssrc datum as given.");
+                                    TaggedExceptionExtensions.RaiseTaggedException(ssrcPart, "See Tag. Cannot Parse a ssrc datum as given.");
                                 }
 
                                 continue;
@@ -560,7 +565,7 @@ namespace Media.Rtsp
 
                     builder.Append(mode);
 
-                    builder.Append((char)Common.ASCII.DoubleQuote);
+                    builder.Append((char)ASCII.DoubleQuote);
                 }
 
                 return builder.ToString();
@@ -648,7 +653,7 @@ namespace Media.Rtsp
                                     if (false == uint.TryParse(ssrcPart, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out id) &&
                                         false == uint.TryParse(ssrcPart, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out id))
                                     {
-                                        Media.Common.TaggedExceptionExtensions.RaiseTaggedException(ssrcPart, "See Tag. Cannot Parse a ssrc datum as given.");
+                                        TaggedExceptionExtensions.RaiseTaggedException(ssrcPart, "See Tag. Cannot Parse a ssrc datum as given.");
                                     }
 
                                     ssrc = (int)id;

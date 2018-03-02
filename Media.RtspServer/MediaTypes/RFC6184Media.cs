@@ -42,6 +42,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using Media.Common.Extensions;
 
 namespace Media.Rtsp.Server.MediaTypes
 {
@@ -84,9 +85,9 @@ namespace Media.Rtsp.Server.MediaTypes
                 //STAP - B has DON at the very beginning
                 if (DON.HasValue)
                 {
-                    data = Media.Common.Extensions.Linq.LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.SingleTimeAggregationB).Concat(Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
+                    data = LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.SingleTimeAggregationB).Concat(Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
                 }//STAP - A
-                else data = Media.Common.Extensions.Linq.LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.SingleTimeAggregationA).Concat(data);
+                else data = LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.SingleTimeAggregationA).Concat(data);
 
                 return data.ToArray();
             }
@@ -111,11 +112,11 @@ namespace Media.Rtsp.Server.MediaTypes
 
                     Common.Binary.Write24(tsOffsetBytes, 0, Common.Binary.IsLittleEndian, tsOffset);
 
-                    return Media.Common.Extensions.Linq.LinqExtensions.Yield(dond).Concat(lengthBytes).Concat(n);
+                    return LinqExtensions.Yield(dond).Concat(lengthBytes).Concat(n);
                 });
 
                 //MTAP has DON at the very beginning
-                data = Media.Common.Extensions.Linq.LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.MultiTimeAggregation16).Concat(Media.Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
+                data = LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.MultiTimeAggregation16).Concat(Media.Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
 
                 return data.ToArray();
             }
@@ -141,11 +142,11 @@ namespace Media.Rtsp.Server.MediaTypes
 
                     Common.Binary.Write16(tsOffsetBytes, 0, Common.Binary.IsLittleEndian, tsOffset);
                     
-                    return Media.Common.Extensions.Linq.LinqExtensions.Yield(dond).Concat(tsOffsetBytes).Concat(lengthBytes).Concat(n);
+                    return LinqExtensions.Yield(dond).Concat(tsOffsetBytes).Concat(lengthBytes).Concat(n);
                 });
 
                 //MTAP has DON at the very beginning
-                data = Media.Common.Extensions.Linq.LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.MultiTimeAggregation24).Concat(Media.Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
+                data = LinqExtensions.Yield(Media.Codecs.Video.H264.NalUnitType.MultiTimeAggregation24).Concat(Media.Common.Binary.GetBytes((short)DON, Common.Binary.IsLittleEndian)).Concat(data);
 
                 return data.ToArray();
             }
@@ -308,12 +309,12 @@ namespace Media.Rtsp.Server.MediaTypes
                             //FU (A/B) Indicator with F and NRI
                             //Start Bit Set with Original NalType
 
-                            data = Enumerable.Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(fragmentIndicator), Media.Common.Extensions.Linq.LinqExtensions.Yield(((byte)(0x80 | nalType))));
+                            data = Enumerable.Concat(LinqExtensions.Yield(fragmentIndicator), LinqExtensions.Yield(((byte)(0x80 | nalType))));
                         }
                         else if (offset + mtu > nalLength)
                         {
                             //End Bit Set with Original NalType
-                            data = Enumerable.Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(fragmentIndicator), Media.Common.Extensions.Linq.LinqExtensions.Yield(((byte)(0x40 | nalType))));
+                            data = Enumerable.Concat(LinqExtensions.Yield(fragmentIndicator), LinqExtensions.Yield(((byte)(0x40 | nalType))));
 
                             //This should not be set at the nal level for end of nal units.
                             //marker = true;
@@ -322,7 +323,7 @@ namespace Media.Rtsp.Server.MediaTypes
                         else//For packets other than the start or end
                         {
                             //No Start, No End
-                            data = Enumerable.Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(fragmentIndicator), Media.Common.Extensions.Linq.LinqExtensions.Yield(nalType));
+                            data = Enumerable.Concat(LinqExtensions.Yield(fragmentIndicator), LinqExtensions.Yield(nalType));
                         }
 
                         //FU - B has DON at the very beginning of each 
@@ -1087,9 +1088,9 @@ namespace Media.Rtsp.Server.MediaTypes
         {
             if (Common.IDisposedExtensions.IsNullOrDisposed(frame)) return false;
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(nalTypes)) return false;
+            if (ArrayExtensions.IsNullOrEmpty(nalTypes)) return false;
 
-            return frame.m_ContainedNalTypes.Any(n => nalTypes.Contains(n));
+            return frame.m_ContainedNalTypes.Any(n => Enumerable.Contains(nalTypes, n));
         }
 
         public static bool IsKeyFrame(this Media.Rtsp.Server.MediaTypes.RFC6184Media.RFC6184Frame frame)

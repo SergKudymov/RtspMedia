@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using Media.Common.Classes;
 using Media.Common.Classes.Disposables;
 using Media.Common.Classes.Text;
+using Media.Common.Extensions;
 
 namespace Media.Http
 {
@@ -30,7 +31,7 @@ namespace Media.Http
         {
             if (socket == null) throw new ArgumentNullException("Socket");
 
-            Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(socket);
+            SocketExtensions.EnableAddressReuse(socket);
             //socket.ExclusiveAddressUse = false;
             //socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
@@ -59,13 +60,13 @@ namespace Media.Http
                 //Media.Common.Extensions.Socket.SocketExtensions.EnableTcpCongestionAlgorithm(socket);
 
                 // Set option that allows socket to close gracefully without lingering.
-                Media.Common.Extensions.Socket.SocketExtensions.DisableLinger(socket);
+                SocketExtensions.DisableLinger(socket);
 
                 //Retransmit for 0 sec
-                if(Common.Extensions.OperatingSystemExtensions.IsWindows) Media.Common.Extensions.Socket.SocketExtensions.DisableTcpRetransmissions(socket);
+                if(Common.Extensions.OperatingSystemExtensions.IsWindows) SocketExtensions.DisableTcpRetransmissions(socket);
 
                 //If both send and receieve buffer size are 0 then there is no coalescing when nagle's algorithm is disabled
-                Media.Common.Extensions.Socket.SocketExtensions.DisableTcpNagelAlgorithm(socket);
+                SocketExtensions.DisableTcpNagelAlgorithm(socket);
                 //socket.NoDelay = true;
 
                 //Allow more than one byte of urgent data
@@ -525,8 +526,8 @@ namespace Media.Http
             if (false == location.IsAbsoluteUri)
             {
                 if (existing == null) throw new ArgumentException("Must be absolute unless a socket is given", "location");
-                if (existing.Connected) location = Media.Common.Extensions.IPEndPoint.IPEndPointExtensions.ToUri(((IPEndPoint)existing.RemoteEndPoint), HttpMessage.TransportScheme);
-                else if (existing.IsBound) location = Media.Common.Extensions.IPEndPoint.IPEndPointExtensions.ToUri(((IPEndPoint)existing.LocalEndPoint), HttpMessage.TransportScheme);
+                if (existing.Connected) location = IPEndPointExtensions.ToUri(((IPEndPoint)existing.RemoteEndPoint), HttpMessage.TransportScheme);
+                else if (existing.IsBound) location = IPEndPointExtensions.ToUri(((IPEndPoint)existing.LocalEndPoint), HttpMessage.TransportScheme);
                 else throw new InvalidOperationException("location must be specified when existing socket must be connected or bound.");
             }
 
@@ -581,7 +582,7 @@ namespace Media.Http
             if (Credential == null && false == string.IsNullOrWhiteSpace(CurrentLocation.UserInfo))
             {
                 //Parse the given cred from the location
-                Credential = Media.Common.Extensions.Uri.UriExtensions.ParseUserInfo(CurrentLocation);
+                Credential = UriExtensions.ParseUserInfo(CurrentLocation);
 
                 //Remove the user info from the location (may not have @?)
                 m_InitialLocation = CurrentLocation = new Uri(CurrentLocation.AbsoluteUri.Replace(CurrentLocation.UserInfo + (char)ASCII.AtSign, string.Empty).Replace(CurrentLocation.UserInfo, string.Empty));
@@ -1560,9 +1561,9 @@ namespace Media.Http
 
             //Should also handle when baseParts has 0 length
 
-            string[] baseParts = authenticateHeader.Split(Media.Common.Extensions.Linq.LinqExtensions.Yield(((char)ASCII.Space)).ToArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+            string[] baseParts = authenticateHeader.Split(LinqExtensions.Yield(((char)ASCII.Space)).ToArray(), 2, StringSplitOptions.RemoveEmptyEntries);
 
-            if (baseParts.Length > 1) baseParts = Media.Common.Extensions.Linq.LinqExtensions.Yield(baseParts[0]).Concat(baseParts[1].Split(HttpHeaders.Comma).Select(s => s.Trim())).ToArray();
+            if (baseParts.Length > 1) baseParts = LinqExtensions.Yield(baseParts[0]).Concat(baseParts[1].Split(HttpHeaders.Comma).Select(s => s.Trim())).ToArray();
 
             if (string.Compare(baseParts[0].Trim(), "basic", true) == 0 || m_AuthenticationScheme == AuthenticationSchemes.Basic)
             {

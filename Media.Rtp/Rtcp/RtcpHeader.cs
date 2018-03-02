@@ -44,6 +44,7 @@ using System.Linq;
 using System.Text;
 
 using Media.Common;
+using Media.Common.Classes.Disposables;
 
 #endregion
 namespace Media.Rtcp
@@ -71,7 +72,7 @@ namespace Media.Rtcp
     /// <summary>
     /// Provides a managed abstraction around the first 4 octets of any RtcpPacket.
     /// Futher information can be found at http://tools.ietf.org/html/rfc3550#section-6.4.1
-    /// Note in certain situations the <see cref="CommonHeaderBits.RtcpBlockCount"/> is used for application specific purposes.
+    /// Note in certain situations the <see cref="RFC3550.CommonHeaderBits.RtcpBlockCount"/> is used for application specific purposes.
     /// </summary>
     public class RtcpHeader : SuppressedFinalizerDisposable, IEnumerable<byte>
     {

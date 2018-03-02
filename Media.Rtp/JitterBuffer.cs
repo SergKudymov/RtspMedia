@@ -1,4 +1,6 @@
-﻿namespace Media.Rtp
+﻿using Media.Common.Classes.Disposables;
+
+namespace Media.Rtp
 {
     #region JitterBuffer
 
@@ -12,7 +14,7 @@
     /// <summary>
     /// RtpPacket and RtpFrame storage.
     /// </summary>
-    public class JitterBuffer : Common.BaseDisposable
+    public class JitterBuffer : BaseDisposable
     {
         //PayloadType, Frames for PayloadType
         readonly Common.Collections.Generic.ConcurrentThesaurus<int, RtpFrame> Frames = new Common.Collections.Generic.ConcurrentThesaurus<int, RtpFrame>();
@@ -160,7 +162,7 @@
                     if (disposeFrames) foreach (RtpFrame frame in frames)
                         {
                             //Set ShouldDispose through the base class.
-                            Common.BaseDisposable.SetShouldDispose(frame, true, true);
+                            BaseDisposable.SetShouldDispose(frame, true, true);
 
                             //Dispose the frame (already done with above call)
                             frame.Dispose();

@@ -36,7 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.Math
+namespace Media.Common.Extensions
 {
     public static class MathExtensions
     {

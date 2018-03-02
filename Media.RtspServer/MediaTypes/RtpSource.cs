@@ -33,6 +33,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * 
  * v//
  */
+
+using Media.Common.Extensions;
+
 namespace Media.Rtsp.Server.MediaTypes
 {
     /// <summary>
@@ -234,7 +237,7 @@ namespace Media.Rtsp.Server.MediaTypes
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         System.Collections.Generic.IEnumerable<System.Threading.Thread> Common.IThreadReference.GetReferencedThreads()
         {
-            return Common.IDisposedExtensions.IsNullOrDisposed(RtpClient) ? null : Media.Common.Extensions.Linq.LinqExtensions.Yield(RtpClient.m_WorkerThread);
+            return Common.IDisposedExtensions.IsNullOrDisposed(RtpClient) ? null : LinqExtensions.Yield(RtpClient.m_WorkerThread);
         }
 
         System.Action<System.Threading.Thread> Common.IThreadReference.ConfigureThread
@@ -281,7 +284,7 @@ namespace Media.Rtsp.Server.MediaTypes
         public RtpSource(string name, System.Uri source, Rtp.RtpClient client, bool perPacket = false)
             : this(name, source, perPacket)
         {
-            if (Common.IDisposedExtensions.IsNullOrDisposed(client)) throw new Media.Common.Extensions.Exception.ExceptionExtensions.ArgumentNullOrDisposedException(client);            
+            if (Common.IDisposedExtensions.IsNullOrDisposed(client)) throw new ExceptionExtensions.ArgumentNullOrDisposedException(client);            
 
             RtpClient = client;
         }
@@ -294,7 +297,7 @@ namespace Media.Rtsp.Server.MediaTypes
         public RtpSource(string name, Sdp.SessionDescription sessionDescription)
             : base(name, new System.Uri(string.Join(System.Uri.SchemeDelimiter, Rtp.RtpClient.RtpProtcolScheme, ((Sdp.Lines.SessionConnectionLine)sessionDescription.ConnectionLine).Host)))
         {
-            if (Common.IDisposedExtensions.IsNullOrDisposed(sessionDescription)) throw new Media.Common.Extensions.Exception.ExceptionExtensions.ArgumentNullOrDisposedException("sessionDescription", sessionDescription);
+            if (Common.IDisposedExtensions.IsNullOrDisposed(sessionDescription)) throw new ExceptionExtensions.ArgumentNullOrDisposedException("sessionDescription", sessionDescription);
 
             RtpClient = Rtp.RtpClient.FromSessionDescription(SessionDescription = sessionDescription);
 

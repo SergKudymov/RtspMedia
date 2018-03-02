@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Media.Common.Extensions;
 
 namespace Media.Common
 {
@@ -32,7 +33,7 @@ namespace Media.Common
                 System.Threading.Thread t = tp;
 
                 //Call AbortAndFree                                                    //Should be Stopped to check for stop?
-                if (false == Media.Common.Extensions.Thread.ThreadExtensions.TryAbortAndFree(ref t, System.Threading.ThreadState.Running, timeoutmSec)) t = null; //Remove the reference if required
+                if (false == ThreadExtensions.TryAbortAndFree(ref t, System.Threading.ThreadState.Running, timeoutmSec)) t = null; //Remove the reference if required
             }
         }
 
@@ -44,7 +45,7 @@ namespace Media.Common
                 System.Threading.Thread t = tp;
 
                 //Call AbortAndFree                                                    //Should be Stopped to check for stop?
-                if (false == Media.Common.Extensions.Thread.ThreadExtensions.TryAbortAndFree(ref t, timeout, System.Threading.ThreadState.Running)) t = null; //Remove the reference if required
+                if (false == ThreadExtensions.TryAbortAndFree(ref t, timeout, System.Threading.ThreadState.Running)) t = null; //Remove the reference if required
             }
         }
     }

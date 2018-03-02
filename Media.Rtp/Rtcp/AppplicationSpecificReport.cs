@@ -43,6 +43,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Media.Common;
+using Media.Common.Extensions;
 using Media.Rtp.Rtcp;
 
 #endregion
@@ -84,11 +85,11 @@ namespace Media.Rtcp
             : base(version, PayloadType, padding, ssrc, 
             subType, //BlockCount
             0, //BlockSize
-            Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(applicationDependentData) ? NameSize : NameSize + applicationDependentData.Length + 1,//Extension size in bytes
+            ArrayExtensions.IsNullOrEmpty(applicationDependentData) ? NameSize : NameSize + applicationDependentData.Length + 1,//Extension size in bytes
             shouldDispose) 
         {
             //Copy the given name
-            if (false == Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(name)) Array.Copy(name, 0, Payload.Array, Payload.Offset, NameSize);
+            if (false == ArrayExtensions.IsNullOrEmpty(name)) Array.Copy(name, 0, Payload.Array, Payload.Offset, NameSize);
 
             //Copy the ApplicationDependentData
             if (HasExtensionData)

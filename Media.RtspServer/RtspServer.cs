@@ -41,8 +41,15 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Net;
 using Media.Common;
+using Media.Common.Classes;
 using Media.Common.Classes.Disposables;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
+using Media.Cryptography;
+using Media.Rtp;
+using Media.Rtsp.Server;
 using Media.Rtsp.Server.MediaTypes;
+using Enum = System.Enum;
 
 namespace Media.Rtsp
 {
@@ -87,17 +94,17 @@ namespace Media.Rtsp
             if (reconfigure.Equals(false))
             {
                 //Ensure the address can be re-used
-                Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableAddressReuse(socket));
 
                 //Windows >= 10 and Some Unix
-                Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableUnicastPortReuse(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableUnicastPortReuse(socket));
             }
 
             //Tcp confgiuration
             if (socket.ProtocolType == ProtocolType.Tcp)
             {                
                 // Set option that allows socket to close gracefully without lingering.
-                Media.Common.Extensions.Socket.SocketExtensions.DisableLinger(socket);
+                SocketExtensions.DisableLinger(socket);
 
                 //Windows options
                 if (Common.Extensions.OperatingSystemExtensions.IsWindows)
@@ -106,27 +113,27 @@ namespace Media.Rtsp
                     //Media.Common.Extensions.Socket.SocketExtensions.EnableTcpTimestamp(socket);
 
                     //Retransmit for 0 sec
-                    Media.Common.Extensions.Socket.SocketExtensions.DisableTcpRetransmissions(socket);
+                    SocketExtensions.DisableTcpRetransmissions(socket);
 
                     // Enable No Syn Retries
-                    Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpNoSynRetries(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpNoSynRetries(socket));
 
                     // Enable CongestionAlgorithm
-                    Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpCongestionAlgorithm(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpCongestionAlgorithm(socket));
 
                     // Set OffloadPreferred
-                    Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.SetTcpOffloadPreference(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.SetTcpOffloadPreference(socket));
                 }
 
                 //If both send and receieve buffer size are 0 then there is no coalescing when socket's algorithm is disabled
-                Media.Common.Extensions.Socket.SocketExtensions.DisableTcpNagelAlgorithm(socket);
+                SocketExtensions.DisableTcpNagelAlgorithm(socket);
                 //socket.NoDelay = true;
 
                 //Allow more than one byte of urgent data
-                Media.Common.Extensions.Socket.SocketExtensions.EnableTcpExpedited(socket);
+                SocketExtensions.EnableTcpExpedited(socket);
 
                 //Receive any urgent data in the normal data stream
-                Media.Common.Extensions.Socket.SocketExtensions.EnableTcpOutOfBandDataInLine(socket);  
+                SocketExtensions.EnableTcpOutOfBandDataInLine(socket);  
              
 
                 //Todo, MaxSegmentSize
@@ -623,9 +630,9 @@ namespace Media.Rtsp
         {
             Exception any;
 
-            if (Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryAdd(m_RequestHandlers, method, handler, out any).Equals(false))
+            if (DictionaryExtensions.TryAdd(m_RequestHandlers, method, handler, out any).Equals(false))
             {
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Custom Handler already registered", any);
+                TaggedExceptionExtensions.RaiseTaggedException(this, "Custom Handler already registered", any);
             }
         }
 
@@ -649,9 +656,9 @@ namespace Media.Rtsp
         {
             Exception any;
 
-            if (Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryRemove(m_RequestHandlers, method, out any).Equals(false))
+            if (DictionaryExtensions.TryRemove(m_RequestHandlers, method, out any).Equals(false))
             {
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Custom Handler already removed", any);
+                TaggedExceptionExtensions.RaiseTaggedException(this, "Custom Handler already removed", any);
             }
         }
 
@@ -665,7 +672,7 @@ namespace Media.Rtsp
         //Allow for joining of server instances to support multiple end points.
 
         public RtspServer(AddressFamily addressFamily = AddressFamily.InterNetwork, int listenPort = DefaultPort, bool shouldDispose = true)
-            : this(new IPEndPoint(Media.Common.Extensions.Socket.SocketExtensions.GetFirstUnicastIPAddress(addressFamily), listenPort), shouldDispose) { }
+            : this(new IPEndPoint(SocketExtensions.GetFirstUnicastIPAddress(addressFamily), listenPort), shouldDispose) { }
 
         public RtspServer(IPAddress listenAddress, int listenPort, bool shouldDispose = true) 
             : this(new IPEndPoint(listenAddress, listenPort), shouldDispose) { }
@@ -815,7 +822,7 @@ namespace Media.Rtsp
                     EndPoint inBound;
 
                     m_UdpServerSocket = new Socket(addressFamily, SocketType.Dgram, ProtocolType.Udp);
-                    m_UdpServerSocket.Bind(inBound = new IPEndPoint(Media.Common.Extensions.Socket.SocketExtensions.GetFirstUnicastIPAddress(addressFamily), port));
+                    m_UdpServerSocket.Bind(inBound = new IPEndPoint(SocketExtensions.GetFirstUnicastIPAddress(addressFamily), port));
 
                     //Include the IP Header
                     m_UdpServerSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
@@ -865,7 +872,7 @@ namespace Media.Rtsp
             {
                 Common.ILoggingExtensions.Log(Logger, "Adding Client: " + session.Id);
 
-                if (Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryAdd(m_Sessions, session.Id, session, out any))
+                if (DictionaryExtensions.TryAdd(m_Sessions, session.Id, session, out any))
                 {
                     session.m_Contained = this;
                 }
@@ -907,7 +914,7 @@ namespace Media.Rtsp
                 }
 
                 //If the client was already removed indicate this in the logs
-                if (false.Equals(Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryRemove(m_Sessions, session.Id, out any))) Common.ILoggingExtensions.Log(Logger, "Client Already Removed(" + session.Id + ")");
+                if (false.Equals(DictionaryExtensions.TryRemove(m_Sessions, session.Id, out any))) Common.ILoggingExtensions.Log(Logger, "Client Already Removed(" + session.Id + ")");
 
                 //Indicate success
                 return true;
@@ -986,7 +993,7 @@ namespace Media.Rtsp
             try
             {
                 //Try to add the stream to the dictionary of contained streams.
-                bool result = Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryAdd(m_MediaStreams, stream.Id, stream, out any);
+                bool result = DictionaryExtensions.TryAdd(m_MediaStreams, stream.Id, stream, out any);
 
                 if (result && IsRunning) stream.Start();
 
@@ -1046,7 +1053,7 @@ namespace Media.Rtsp
                     RemoveCredential(source, "Digest");
                 }
 
-                return Media.Common.Extensions.Generic.Dictionary.DictionaryExtensions.TryRemove(m_MediaStreams, streamId, out any);
+                return DictionaryExtensions.TryRemove(m_MediaStreams, streamId, out any);
             }
             catch(Exception ex)
             {
@@ -1089,7 +1096,7 @@ namespace Media.Rtsp
             int trackId, symbolIndex;
 
             if (string.IsNullOrWhiteSpace(streamName)) streamName = mediaLocation.Segments[mediaLocation.Segments.Length - 1].ToLowerInvariant().Replace("/", string.Empty).Trim();
-            else if ((symbolIndex = streamName.IndexOf('=')) >= 0 && int.TryParse(Media.Common.ASCII.ExtractNumber(streamName, symbolIndex, streamName.Length), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out trackId) 
+            else if ((symbolIndex = streamName.IndexOf('=')) >= 0 && int.TryParse(ASCII.ExtractNumber(streamName, symbolIndex, streamName.Length), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out trackId) 
                      ||
                      Enum.TryParse<Sdp.MediaType>(streamName, out mediaType)) streamName = mediaLocation.Segments[mediaLocation.Segments.Length - 2].ToLowerInvariant().Replace("/", string.Empty).Trim();
 
@@ -1309,7 +1316,7 @@ namespace Media.Rtsp
 
                 ConfigureRtspServerSocket(m_TcpServerSocket, out m_SocketPollMicroSeconds, ref reconfigureSocket, m_UdpServerSocket);
 
-                Media.Common.Extensions.Socket.SocketExtensions.ChangeTcpKeepAlive(m_TcpServerSocket, m_SocketPollMicroSeconds, m_SocketPollMicroSeconds);           
+                SocketExtensions.ChangeTcpKeepAlive(m_TcpServerSocket, m_SocketPollMicroSeconds, m_SocketPollMicroSeconds);           
             };
 
             //Configure the socket
@@ -1322,13 +1329,13 @@ namespace Media.Rtsp
             m_TcpServerSocket.Listen(m_MaximumConnections);
 
             //Ensure the address can be re-used
-            if(allowAddressReuse) Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(m_TcpServerSocket));
+            if(allowAddressReuse) ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableAddressReuse(m_TcpServerSocket));
 
             //Windows >= 10 and Some Unix
-            if (allowPortReuse) Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableUnicastPortReuse(m_TcpServerSocket));
+            if (allowPortReuse) ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableUnicastPortReuse(m_TcpServerSocket));
 
             //Create a thread to handle client connections
-            m_ServerThread = new Thread(new ThreadStart(AcceptLoop), Common.Extensions.Thread.ThreadExtensions.MinimumStackSize);
+            m_ServerThread = new Thread(new ThreadStart(AcceptLoop), ThreadExtensions.MinimumStackSize);
             
             //Configure the thread
             m_ServerThread.Name = ServerName + "@" + m_ServerPort;
@@ -1353,7 +1360,7 @@ namespace Media.Rtsp
 
             while (m_Started.HasValue.Equals(false)) System.Threading.Thread.Sleep(0);
 
-            Media.Common.Extensions.Socket.SocketExtensions.ChangeTcpKeepAlive(m_TcpServerSocket, m_SocketPollMicroSeconds, m_SocketPollMicroSeconds << 1);
+            SocketExtensions.ChangeTcpKeepAlive(m_TcpServerSocket, m_SocketPollMicroSeconds, m_SocketPollMicroSeconds << 1);
         }
 
         /// <summary>
@@ -1406,7 +1413,7 @@ namespace Media.Rtsp
 
                         if (IsRunning && m_Maintainer != null) m_Maintainer.Change(TimeSpan.FromTicks(RtspClientInactivityTimeout.Ticks >> 2), Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan);
 
-                    }), Common.Extensions.Thread.ThreadExtensions.MinimumStackSize)
+                    }), ThreadExtensions.MinimumStackSize)
                     {
                         Priority = m_ServerThread.Priority
                     }.Start();
@@ -1468,7 +1475,7 @@ namespace Media.Rtsp
             }
 
             //Abort the worker from receiving clients
-            Media.Common.Extensions.Thread.ThreadExtensions.TryAbortAndFree(ref m_ServerThread);
+            ThreadExtensions.TryAbortAndFree(ref m_ServerThread);
 
             //Dispose the server socket
             if (object.ReferenceEquals(m_TcpServerSocket, null).Equals(false))                
@@ -1515,7 +1522,7 @@ namespace Media.Rtsp
                             if (ex is ThreadAbortException) System.Threading.Thread.ResetAbort();
                         }
 
-                    }, Common.Extensions.Thread.ThreadExtensions.MinimumStackSize)
+                    }, ThreadExtensions.MinimumStackSize)
                     {
                         Priority = ThreadPriority.AboveNormal
                     }.Start();
@@ -1556,7 +1563,7 @@ namespace Media.Rtsp
 
                             if (ex is ThreadAbortException) System.Threading.Thread.ResetAbort();
                         }
-                    }, Common.Extensions.Thread.ThreadExtensions.MinimumStackSize)
+                    }, ThreadExtensions.MinimumStackSize)
                     {
                         Priority = ThreadPriority.AboveNormal
                     }.Start();
@@ -2795,7 +2802,7 @@ namespace Media.Rtsp
             {
                 //Parse type from authHeader
 
-                string[] parts = authHeader.Split((char)Common.ASCII.Space);
+                string[] parts = authHeader.Split((char)ASCII.Space);
 
                 string authType = null;
 
@@ -2991,7 +2998,7 @@ namespace Media.Rtsp
 
             Sdp.MediaDescription mediaDescription;
 
-            if ((symbolIndex = track.IndexOf('=')) >= 0 && int.TryParse(Media.Common.ASCII.ExtractNumber(track, symbolIndex, track.Length), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out trackId)) mediaDescription = found.SessionDescription.GetMediaDescription(trackId - 1);
+            if ((symbolIndex = track.IndexOf('=')) >= 0 && int.TryParse(ASCII.ExtractNumber(track, symbolIndex, track.Length), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out trackId)) mediaDescription = found.SessionDescription.GetMediaDescription(trackId - 1);
             else mediaDescription = found.SessionDescription.MediaDescriptions.FirstOrDefault(md => string.Compare(track, md.MediaType.ToString(), true, System.Globalization.CultureInfo.InvariantCulture).Equals(0));
 
             ////Find the MediaDescription for the request based on the track variable
@@ -3312,7 +3319,7 @@ namespace Media.Rtsp
             }
             else
             {
-                parts = authHeader.Split((char)Common.ASCII.Space);
+                parts = authHeader.Split((char)ASCII.Space);
 
                 if (parts.Length > 0)
                 { 
@@ -3432,7 +3439,7 @@ namespace Media.Rtsp
                      * 
                      */
 
-                    parts = authHeader.Split((char)Common.ASCII.Comma);
+                    parts = authHeader.Split((char)ASCII.Comma);
 
                     string username, realm, nonce, nc, cnonce, uri, qop, opaque, response;
 
@@ -3470,17 +3477,17 @@ namespace Media.Rtsp
 
                     //http://en.wikipedia.org/wiki/Digest_access_authentication
                     //The MD5 hash of the combined username, authentication realm and password is calculated. The result is referred to as HA1.
-                    byte[] HA1 = Cryptography.MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}:{2}", requiredCredential.UserName, realm.Replace("realm=", string.Empty), requiredCredential.Password)));
+                    byte[] HA1 = MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}:{2}", requiredCredential.UserName, realm.Replace("realm=", string.Empty), requiredCredential.Password)));
 
                     //The MD5 hash of the combined method and digest URI is calculated, e.g. of "GET" and "/dir/index.html". The result is referred to as HA2.
-                    byte[] HA2 = Cryptography.MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}", request.RtspMethod, uri.Replace("uri=", string.Empty))));
+                    byte[] HA2 = MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}", request.RtspMethod, uri.Replace("uri=", string.Empty))));
 
                     //No QOP No NC
                     //See http://en.wikipedia.org/wiki/Digest_access_authentication
                     //http://tools.ietf.org/html/rfc2617
 
                     //The MD5 hash of the combined HA1 result, server nonce (nonce), request counter (nc), client nonce (cnonce), quality of protection code (qop) and HA2 result is calculated. The result is the "response" value provided by the client.
-                    byte[] ResponseHash = Cryptography.MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}:{2}:{3}:{4}:{5}", 
+                    byte[] ResponseHash = MD5.GetHash(request.ContentEncoding.GetBytes(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}:{1}:{2}:{3}:{4}:{5}", 
                         Convert.ToString(HA1).Replace("-", string.Empty), 
                         nonce.Replace("nonce=", string.Empty), 
                         nc.Replace("nc=", string.Empty), 
@@ -3489,7 +3496,7 @@ namespace Media.Rtsp
                         Convert.ToString(HA2).Replace("-", string.Empty))));
 
                     //return the result of a mutal hash creation via comparison
-                    return ResponseHash.SequenceEqual(Media.Common.Extensions.String.StringExtensions.HexStringToBytes(response.Replace("response=", string.Empty)));
+                    return ResponseHash.SequenceEqual(StringExtensions.HexStringToBytes(response.Replace("response=", string.Empty)));
                 }
                 //else if (source.RemoteAuthenticationScheme == AuthenticationSchemes.IntegratedWindowsAuthentication && (header.Contains("ntlm") || header.Contains("integrated")))
                 //{
@@ -3605,7 +3612,7 @@ namespace Media.Rtsp
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         IEnumerable<Thread> Common.IThreadReference.GetReferencedThreads()
         {
-             return Media.Common.Extensions.Linq.LinqExtensions.Yield(m_ServerThread);
+             return LinqExtensions.Yield(m_ServerThread);
         }
     }
 }

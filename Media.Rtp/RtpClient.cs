@@ -44,7 +44,12 @@ using Media.Rtcp;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using Media.Common.Classes;
+using Media.Common.Classes.Disposables;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
 using Media.Rtp.Rtcp;
+using Media.Sdp;
 
 //Todo, Provide a RtpConference class or integrate the capability to send and recieve to multiple parties
 
@@ -92,16 +97,16 @@ namespace Media.Rtp
 {
     /// <summary>
     /// Provides an implementation of the <see cref="http://tools.ietf.org/html/rfc3550"> Real Time Protocol </see>.
-    /// A RtpClient typically allows one <see cref="System.Net.Socket"/> to communicate (via RTP) to another <see cref="System.Net.Socket"/> via <see cref="RtpClient.TransportContext"/>'s in which some <see cref="SessionDescription"/> has been created.
+    /// A RtpClient typically allows one <see cref="Socket"/> to communicate (via RTP) to another <see cref="Socket"/> via <see cref="RtpClient.TransportContext"/>'s in which some <see cref="SessionDescription"/> has been created.
     /// </summary>
-    public partial class RtpClient : Common.BaseDisposable, Media.Common.IThreadReference
+    public partial class RtpClient : BaseDisposable, Media.Common.IThreadReference
     {
         #region Nested Types
 
         /// <summary>
         ///Contains the information and assets relevent to each stream in use by a RtpClient
         /// </summary>
-        public class TransportContext : Common.SuppressedFinalizerDisposable, Common.ISocketReference
+        public class TransportContext : SuppressedFinalizerDisposable, Common.ISocketReference
         {
             #region Statics
 
@@ -127,7 +132,7 @@ namespace Media.Rtp
             {
                 if (socket == null) throw new ArgumentNullException("socket");
 
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableAddressReuse(socket));
 
                 //RtpSocket.Blocking = false;
 
@@ -143,14 +148,14 @@ namespace Media.Rtp
                     //56 is Network Control
                     //Set type of service
 
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.TypeOfService, 47));
+                    ExceptionExtensions.ResumeOnError(() => socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.TypeOfService, 47));
 
                     //Tell the network stack what we send and receive has an order
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.DontFragment = true);
+                    ExceptionExtensions.ResumeOnError(() => socket.DontFragment = true);
                 }                
 
                 //Don't buffer sending
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.SendBufferSize = 0);
+                ExceptionExtensions.ResumeOnError(() => socket.SendBufferSize = 0);
                 
                 if (socket.ProtocolType == ProtocolType.Tcp)
                 {
@@ -158,27 +163,27 @@ namespace Media.Rtp
                     if (Common.Extensions.OperatingSystemExtensions.IsWindows)
                     {
                         //Disable Retransmission
-                        Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableTcpRetransmissions(socket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableTcpRetransmissions(socket));
 
                         // Enable No Syn Retries
-                        Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpNoSynRetries(socket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpNoSynRetries(socket));
 
                         // Set OffloadPreferred
-                        Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.SetTcpOffloadPreference(socket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.SetTcpOffloadPreference(socket));
 
                     }
 
                     //Don't buffer receiving
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.ReceiveBufferSize = 0);
+                    ExceptionExtensions.ResumeOnError(() => socket.ReceiveBufferSize = 0);
                     
 
                     //If both send and receieve buffer size are 0 then there is no coalescing when nagle's algorithm is disabled
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableTcpNagelAlgorithm(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableTcpNagelAlgorithm(socket));
                 }
                 else if (socket.ProtocolType == ProtocolType.Udp)
                 {
                     //Set max ttl for slower networks
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.Ttl = 255);
+                    ExceptionExtensions.ResumeOnError(() => socket.Ttl = 255);
 
                     //May help if behind a router
                     //Allow Nat Traversal
@@ -191,9 +196,9 @@ namespace Media.Rtp
                 //socket.ReceiveTimeout = 1;
             }
 
-            public static TransportContext FromMediaDescription(Sdp.SessionDescription sessionDescription, 
+            public static TransportContext FromMediaDescription(SessionDescription sessionDescription, 
                 byte dataChannel, byte controlChannel, 
-                Sdp.MediaDescription mediaDescription, 
+                MediaDescription mediaDescription, 
                 bool rtcpEnabled = true, int remoteSsrc = 0, int minimumSequentialpackets = 2, 
                 IPAddress localIp = null, IPAddress remoteIp = null, 
                 int? rtpPort = null, int? rtcpPort = null, 
@@ -222,11 +227,11 @@ namespace Media.Rtp
                 }                
 
                 //For AnySourceMulticast the remoteIp would be a multicast address.
-                bool multiCast = System.Net.IPAddress.Broadcast.Equals(remoteIp) || Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(remoteIp);
+                bool multiCast = System.Net.IPAddress.Broadcast.Equals(remoteIp) || IPAddressExtensions.IsMulticast(remoteIp);
 
                 //If no localIp was given determine based on the remoteIp
                 //--When there is no remoteIp this should be done first to determine if the sender is multicasting.
-                if (object.ReferenceEquals(localIp, null)) localIp = multiCast ? Media.Common.Extensions.Socket.SocketExtensions.GetFirstMulticastIPAddress(remoteIp.AddressFamily) : Media.Common.Extensions.Socket.SocketExtensions.GetFirstUnicastIPAddress(remoteIp.AddressFamily);
+                if (object.ReferenceEquals(localIp, null)) localIp = multiCast ? SocketExtensions.GetFirstMulticastIPAddress(remoteIp.AddressFamily) : SocketExtensions.GetFirstUnicastIPAddress(remoteIp.AddressFamily);
 
                 //The localIp and remoteIp should be on the same network otherwise they will need to be mapped or routed.
                 //In most cases this can be mapped.
@@ -400,7 +405,7 @@ namespace Media.Rtp
                         //TODO, allow for localPort to be specified.
 
                         //Find a local port
-                        int localPort = Media.Common.Extensions.Socket.SocketExtensions.ProbeForOpenPort(ProtocolType.Udp);
+                        int localPort = SocketExtensions.ProbeForOpenPort(ProtocolType.Udp);
 
                         if (localPort < 0) throw new ArgumentOutOfRangeException("Cannot find an open port.");
 
@@ -434,15 +439,15 @@ namespace Media.Rtp
                         try
                         {
 
-                            Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(tc.RtpSocket, remoteIp);
+                            SocketExtensions.JoinMulticastGroup(tc.RtpSocket, remoteIp);
 
-                            Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(tc.RtpSocket, ttl);
+                            SocketExtensions.SetMulticastTimeToLive(tc.RtpSocket, ttl);
 
                             if (rtcpEnabled && false.Equals(tc.RtcpSocket.Handle == tc.RtpSocket.Handle))
                             {
-                                Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(tc.RtcpSocket, remoteIp);
+                                SocketExtensions.JoinMulticastGroup(tc.RtcpSocket, remoteIp);
 
-                                Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(tc.RtcpSocket, ttl);
+                                SocketExtensions.SetMulticastTimeToLive(tc.RtcpSocket, ttl);
                             }
                         }
 
@@ -550,7 +555,7 @@ namespace Media.Rtp
 
             /// <summary>
             /// Creates a <see cref="SourceDescriptionReport"/> from the given context.
-            /// If <paramref name="cName"/> is null then <see cref="SourceDescriptionItem.CName"/> will be used.
+            /// If <paramref name="cName"/> is null then <see cref="SourceDescriptionReport.SourceDescriptionItem.CName"/> will be used.
             /// </summary>
             /// <param name="context">The context</param>
             /// <param name="cName">The optional cName to use</param>
@@ -561,7 +566,7 @@ namespace Media.Rtp
                 return new SourceDescriptionReport(context.Version) 
                 { 
                     //Todo, should have ip / port etc to identify multiple connections to the same server
-                    new Media.Rtcp.SourceDescriptionReport.SourceDescriptionChunk((int)context.SynchronizationSourceIdentifier, Common.Extensions.Linq.LinqExtensions.Yield((cName ?? Media.Rtcp.SourceDescriptionReport.SourceDescriptionItem.CName)).Concat(items ?? System.Linq.Enumerable.Empty<Media.Rtcp.SourceDescriptionReport.SourceDescriptionItem>()))
+                    new Media.Rtcp.SourceDescriptionReport.SourceDescriptionChunk((int)context.SynchronizationSourceIdentifier, LinqExtensions.Yield((cName ?? Media.Rtcp.SourceDescriptionReport.SourceDescriptionItem.CName)).Concat(items ?? System.Linq.Enumerable.Empty<Media.Rtcp.SourceDescriptionReport.SourceDescriptionItem>()))
                 };
             }
 
@@ -606,16 +611,23 @@ namespace Media.Rtp
             //bytes and packet counters
             internal long RfcRtpBytesSent, RfcRtpBytesRecieved, 
                          RtpBytesSent, RtpBytesRecieved,
-                         RtcpBytesSent, RtcpBytesRecieved,
-                         RtpPacketsSent, RtcpPacketsSent,
-                         RtpPacketsReceived, RtcpPacketsReceived;
+                         RtcpBytesSent, RtcpBytesRecieved;
+
+            public long RtpPacketsSent;
+            internal long RtcpPacketsSent;
+
+            public long RtpPacketsReceived;
+            internal long RtcpPacketsReceived;
 
             //The current, highest received and highest sent Sequence numbers recieved by the RtpClient
             internal ushort m_SequenceNumber, m_LastSentSequenceNumber, RtpMaxSeq;
 
             //Used for Rtp and Rtcp Transport Calculations (Should be moved into State Structure)
-            internal uint RtpTransit, SenderTransit,
-                //Count of bytes recieved prior to the reception of a report
+            public uint RtpTransit;
+
+            public uint SenderTransit;
+
+            internal uint //Count of bytes recieved prior to the reception of a report
                 RtpReceivedPrior,
                 //Count of bytes expected prior to the recpetion of a report
                 RtpExpectedPrior,
@@ -626,16 +638,21 @@ namespace Media.Rtp
                 //Rtp Probation value
                 RtpProbation,
                 //The amount of bad RTP Sequences encountered
-                RtpBadSeq,
-                //Jitter value
-                RtpJitter, SenderJitter,
-                //Valid amount of rtp packets recieved 
+                RtpBadSeq;
+
+            public uint RtpJitter;
+
+            public uint SenderJitter;
+
+            internal uint //Valid amount of rtp packets recieved 
                 ValidRtpPacketsReceived;
 
-            internal TimeSpan m_SendInterval = DefaultReportInterval, m_ReceiveInterval = DefaultReportInterval,
+            public TimeSpan m_SendInterval = DefaultReportInterval;
+
+            internal TimeSpan m_ReceiveInterval = DefaultReportInterval,
                 m_InactiveTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan,
                 m_StartTime = TimeSpan.Zero, m_EndTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan;
-                //Used to allow a specific reporting interval (would proably need varaibles for send and receive to allow full customization...)
+            //Used to allow a specific reporting interval (would proably need varaibles for send and receive to allow full customization...)
                 //m_ContextReportInterval = DefaultReportInterval;
 
             //When packets are succesfully transferred the DateTime (utc) is copied in these variables and will reflect the point in time in which  the last 
@@ -649,7 +666,17 @@ namespace Media.Rtp
             /// <summary>
             /// Keeps track of any failures which occur when sending or receieving data.
             /// </summary>
-            internal protected int m_FailedRtpTransmissions, m_FailedRtcpTransmissions, m_FailedRtpReceptions, m_FailedRtcpReceptions;
+            internal protected int m_FailedRtpTransmissions, m_FailedRtcpTransmissions;
+
+            /// <summary>
+            /// Keeps track of any failures which occur when sending or receieving data.
+            /// </summary>
+            public int m_FailedRtpReceptions;
+
+            /// <summary>
+            /// Keeps track of any failures which occur when sending or receieving data.
+            /// </summary>
+            internal protected int m_FailedRtcpReceptions;
 
             /// <summary>
             /// Used to ensure data is quantified as packets which are allowed.
@@ -856,7 +883,7 @@ namespace Media.Rtp
             /// <summary>
             /// Indicates if the RemoteParty is known by a unique id other than 0 unless <see cref="MinimumSequentialValidRtpPackets"/> have been recieved
             /// </summary>
-            internal bool InDiscovery
+            public bool InDiscovery
             {
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get { return ValidRtpPacketsReceived < MinimumSequentialValidRtpPackets && RemoteSynchronizationSourceIdentifier.Equals(Common.Binary.Zero); }
@@ -1457,7 +1484,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get { return (short)m_LastSentSequenceNumber; }
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal protected set { m_LastSentSequenceNumber = (ushort)value; }
+                set { m_LastSentSequenceNumber = (ushort)value; }
             }
 
             public int RtpTimestamp
@@ -1473,7 +1500,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal set;
+                set;
             }
 
             /// <summary>
@@ -1492,7 +1519,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal set;
+                set;
             }
 
             //Allows for time difference between the source and the client when issuing reports, will be added to any NtpTimestamp created.
@@ -1839,8 +1866,8 @@ namespace Media.Rtp
 
                 m_Initialized = DateTime.UtcNow;
 
-                if (localRtp.Address.AddressFamily.Equals(remoteRtp.Address.AddressFamily).Equals(false)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException<TransportContext>(this, "localIp and remoteIp AddressFamily must match.");
-                else if (punchHole) punchHole = Media.Common.Extensions.IPAddress.IPAddressExtensions.IsOnIntranet(remoteRtp.Address).Equals(false); //Only punch a hole if the remoteIp is not on the LAN by default.
+                if (localRtp.Address.AddressFamily.Equals(remoteRtp.Address.AddressFamily).Equals(false)) TaggedExceptionExtensions.RaiseTaggedException<TransportContext>(this, "localIp and remoteIp AddressFamily must match.");
+                else if (punchHole) punchHole = IPAddressExtensions.IsOnIntranet(remoteRtp.Address).Equals(false); //Only punch a hole if the remoteIp is not on the LAN by default.
                 
                 //Erase previously set values on the TransportContext.
                 //RtpBytesRecieved = RtpBytesSent = RtcpBytesRecieved = RtcpBytesSent = 0;
@@ -2053,7 +2080,7 @@ namespace Media.Rtp
 
                 RtpSocket.SendTimeout = RtpSocket.ReceiveTimeout = (int)(ReceiveInterval.TotalMilliseconds) >> 1;                
 
-                bool punchHole = false.Equals(RtpSocket.ProtocolType == ProtocolType.Tcp) && false.Equals(Media.Common.Extensions.IPAddress.IPAddressExtensions.IsOnIntranet(((IPEndPoint)RtpSocket.RemoteEndPoint).Address)); //Only punch a hole if the remoteIp is not on the LAN by default.
+                bool punchHole = false.Equals(RtpSocket.ProtocolType == ProtocolType.Tcp) && false.Equals(IPAddressExtensions.IsOnIntranet(((IPEndPoint)RtpSocket.RemoteEndPoint).Address)); //Only punch a hole if the remoteIp is not on the LAN by default.
 
                 if (object.ReferenceEquals(RemoteRtp, null)) RemoteRtp = RtpSocket.RemoteEndPoint;
 
@@ -2160,7 +2187,7 @@ namespace Media.Rtp
                     foreach (System.Net.IPAddress groupAddress in MulticastGroups)
                     {
                         //Todo, TryLeave. If false shutdown is coming anyway...
-                        Media.Common.Extensions.Socket.SocketExtensions.LeaveMulticastGroup(RtpSocket, groupAddress);
+                        SocketExtensions.LeaveMulticastGroup(RtpSocket, groupAddress);
                     }
 
                     MulticastGroups.Clear();
@@ -3208,7 +3235,7 @@ namespace Media.Rtp
 
             if (m_ThreadEvents)
             {
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(null, new Common.Classes.PacketBase(data, offset, length, true, true), true, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(null, new PacketBase(data, offset, length, true, true), true, true));
 
                 m_EventReady.Set();
 
@@ -3240,7 +3267,7 @@ namespace Media.Rtp
 
             //Don't have to waste cycles on this thread calling dispose...
             //Todo, check if ShouldDispose was set to false in event..
-            if (false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) Common.BaseDisposable.SetShouldDispose(packet, true, false);
+            if (false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) BaseDisposable.SetShouldDispose(packet, true, false);
         }
 
         /// <summary>
@@ -3263,7 +3290,7 @@ namespace Media.Rtp
             if (m_ThreadEvents)
             {
                 //Use a clone of the packet and data into a new reference so it can stay alive for the event.
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(tc, packet.Clone(true, true, true, true, false, true), false, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(tc, packet.Clone(true, true, true, true, false, true), false, true));
 
                 m_EventReady.Set();
 
@@ -3281,7 +3308,7 @@ namespace Media.Rtp
             }
 
             //Allow the packet to be destroyed if an event did not already change this.
-            if (shouldDispose && packet.ShouldDispose.Equals(false) && false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) Common.BaseDisposable.SetShouldDispose(packet, true, false);
+            if (shouldDispose && packet.ShouldDispose.Equals(false) && false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) BaseDisposable.SetShouldDispose(packet, true, false);
         }
 
         /// <summary>
@@ -3305,7 +3332,7 @@ namespace Media.Rtp
             {
                 //Todo, only clone if ShouldDispose is true.
 
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(tc, packet.Clone(true, true, false), false, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(tc, packet.Clone(true, true, false), false, true));
 
                 m_EventReady.Set();
 
@@ -3323,7 +3350,7 @@ namespace Media.Rtp
             }
 
             //Allow the packet to be destroyed if an event did not already change this.
-            if (shouldDispose && packet.ShouldDispose.Equals(false) && false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) Common.BaseDisposable.SetShouldDispose(packet, true, false);
+            if (shouldDispose && packet.ShouldDispose.Equals(false) && false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(packet))) BaseDisposable.SetShouldDispose(packet, true, false);
         }
 
         /// <summary>
@@ -3346,7 +3373,7 @@ namespace Media.Rtp
             if (m_ThreadEvents)
             {
                                                                                                 //new RtpFrame(frame)
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(tc, frame, final, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(tc, frame, final, true));
 
                 m_EventReady.Set();
 
@@ -3497,7 +3524,7 @@ namespace Media.Rtp
 
             if (m_ThreadEvents)
             {
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(tc, packet, false, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(tc, packet, false, true));
 
                 m_EventReady.Set();
 
@@ -3533,7 +3560,7 @@ namespace Media.Rtp
 
             if (m_ThreadEvents)
             {
-                m_EventData.Enqueue(new Tuple<TransportContext, Common.BaseDisposable, bool, bool>(tc, packet, false, true));
+                m_EventData.Enqueue(new Tuple<TransportContext, BaseDisposable, bool, bool>(tc, packet, false, true));
 
                 return;
             }
@@ -3628,7 +3655,7 @@ namespace Media.Rtp
                     if (m_EventThread == null || EventsStarted.Equals(DateTime.MinValue))
                     {
                         //Create the event thread
-                        m_EventThread = new Thread(new ThreadStart(HandleEvents), Common.Extensions.Thread.ThreadExtensions.MinimumStackSize);
+                        m_EventThread = new Thread(new ThreadStart(HandleEvents), ThreadExtensions.MinimumStackSize);
 
                         //Configure
                         ConfigureThread(m_EventThread); //should pass name and logging.
@@ -3655,7 +3682,7 @@ namespace Media.Rtp
                     m_EventThread.Priority = ThreadPriority.Lowest;
 
                     //Abort and free the thread.
-                    Common.Extensions.Thread.ThreadExtensions.AbortAndFree(ref m_EventThread);
+                    ThreadExtensions.AbortAndFree(ref m_EventThread);
 
                     //Handle any remaining events so the packets in Queue don't get disposed...
                     //while (m_ThreadEvents == false && EventsStarted == DateTime.MinValue && false == m_EventData.IsEmpty)
@@ -4038,7 +4065,7 @@ namespace Media.Rtp
 
         public override string ToString()
         {
-            return string.Join(((char)Common.ASCII.HyphenSign).ToString(), base.ToString(), InternalId);
+            return string.Join(((char)ASCII.HyphenSign).ToString(), base.ToString(), InternalId);
         }
 
         #endregion
@@ -4115,9 +4142,9 @@ namespace Media.Rtp
 
             if (IsDisposed) return threads;
 
-            if (IsActive) threads = threads.Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(m_WorkerThread));
+            if (IsActive) threads = threads.Concat(LinqExtensions.Yield(m_WorkerThread));
 
-            if (m_ThreadEvents) threads = threads.Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield(m_EventThread));
+            if (m_ThreadEvents) threads = threads.Concat(LinqExtensions.Yield(m_EventThread));
 
             return threads;
         }

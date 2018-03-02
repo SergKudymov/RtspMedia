@@ -39,7 +39,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 using Media.Common.Classes;
 using Media.Common.Classes.Disposables;
 
-namespace Media.Common.Extensions.Stream
+namespace Media.Common.Extensions
 {
     public static class StreamExtensions
     {

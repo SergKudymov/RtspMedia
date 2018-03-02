@@ -36,7 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.Socket
+namespace Media.Common.Extensions
 {
     /// <summary>
     /// Provides methods which are useful for reading and writing socket options.    
@@ -76,7 +76,7 @@ namespace Media.Common.Extensions.Socket
         {
             System.Net.Sockets.Socket result = new System.Net.Sockets.Socket(localIp.AddressFamily, socketType, protocol);
 
-            Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(result);
+            SocketExtensions.EnableAddressReuse(result);
 
             result.Bind(new System.Net.IPEndPoint(localIp, port));
 
@@ -176,7 +176,7 @@ namespace Media.Common.Extensions.Socket
                     {
                         working = new System.Net.Sockets.Socket(localIp.AddressFamily, System.Net.Sockets.SocketType.Stream, type);
 
-                        Media.Common.Extensions.Socket.SocketExtensions.DisableAddressReuse(working);
+                        SocketExtensions.DisableAddressReuse(working);
 
                         break;
                     }
@@ -185,7 +185,7 @@ namespace Media.Common.Extensions.Socket
                     {
                         working = new System.Net.Sockets.Socket(localIp.AddressFamily, System.Net.Sockets.SocketType.Dgram, type);
 
-                        Media.Common.Extensions.Socket.SocketExtensions.DisableAddressReuse(working);
+                        SocketExtensions.DisableAddressReuse(working);
                         
                         break;
                     }
@@ -715,7 +715,7 @@ namespace Media.Common.Extensions.Socket
             //Todo, static local allocation
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, TcpMaximumRetransmissionOptionName, len);
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return -1;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return -1;
 
             return Common.Binary.Read32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian);
 
@@ -790,7 +790,7 @@ namespace Media.Common.Extensions.Socket
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, TcpNotUrgent, len);
 
             //No value for the option or less than expected return false
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
 
             //Read the 32 bits of the buffer in network byte order, return true if the value != 0
             return false.Equals(Common.Binary.Read32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian).Equals(0));
@@ -813,7 +813,7 @@ namespace Media.Common.Extensions.Socket
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, TcpStandardUrgency, len);
 
             //No value for the option or less than expected return false
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
 
             //Read the 32 bits of the buffer in network byte order, return true if the value != 0
             return false.Equals(Common.Binary.Read32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian).Equals(0));
@@ -826,7 +826,7 @@ namespace Media.Common.Extensions.Socket
             //Todo, static local allocation
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, System.Net.Sockets.SocketOptionName.Expedited, len);
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return 0;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return 0;
 
             return Common.Binary.Read32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian);
         }
@@ -843,7 +843,7 @@ namespace Media.Common.Extensions.Socket
             //Todo, static local allocation
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, System.Net.Sockets.SocketOptionName.Expedited, len);
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
 
             return Common.Binary.ReadU32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian) > 0;
         }
@@ -898,7 +898,7 @@ namespace Media.Common.Extensions.Socket
             byte[] value = socket.GetSocketOption(System.Net.Sockets.SocketOptionLevel.Tcp, System.Net.Sockets.SocketOptionName.OutOfBandInline, len);
 
             //No value for the option or less than expected return false
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
+            if (ArrayExtensions.IsNullOrEmpty(value, out len) || len < Common.Binary.BytesPerInteger) return false;
 
             //Read the 32 bits of the buffer in network byte order, return true if the value != 0
             return false.Equals(Common.Binary.Read32(value, Common.Binary.BytesPerInteger, Media.Common.Binary.IsLittleEndian).Equals(0));
@@ -1197,7 +1197,7 @@ namespace Media.Common.Extensions.Socket
             //To hold what was received and the maximum amount to receive
             int totalReceived = 0, max , attempt = 0, justReceived = 0;
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(buffer, out max)) return 0;
+            if (ArrayExtensions.IsNullOrEmpty(buffer, out max)) return 0;
 
             //Account for the offset
             max -= offset;

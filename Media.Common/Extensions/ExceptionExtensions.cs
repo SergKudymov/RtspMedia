@@ -36,7 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.Exception
+namespace Media.Common.Extensions
 {
     /// <summary>
     /// Provides methods which allow detection of <see cref="System.Exception"/> state as well as methods to raise exceptions.

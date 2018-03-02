@@ -110,7 +110,7 @@ namespace Media.Common.Extensions.Encoding
 
             int max;
 
-            if (count.Equals(Common.Binary.Zero) || Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(buffer, out max))
+            if (count.Equals(Common.Binary.Zero) || ArrayExtensions.IsNullOrEmpty(buffer, out max))
             {
                 result = null;
 

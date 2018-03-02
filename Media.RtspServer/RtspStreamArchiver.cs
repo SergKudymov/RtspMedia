@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Media.Common.Classes.Disposables;
 
 namespace Media.Rtsp.Server
 {
-    public class RtspStreamArchiver : Common.BaseDisposable
+    public class RtspStreamArchiver : BaseDisposable
     {
 
         //Nested type for playback

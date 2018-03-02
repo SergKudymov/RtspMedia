@@ -43,6 +43,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Media.Common;
+using Media.Common.Extensions;
 using Media.Rtp.Rtcp;
 
 #endregion
@@ -78,7 +79,7 @@ namespace Media.Rtcp
         internal GoodbyeReport(int version, int padding, int ssrc, ref int blockCount, ref int extensionSize, ref int bytesInSourceList, byte[] extensionData)
             : base(version, PayloadType, padding, ssrc, blockCount, 0, //caulcated via extensionSize 
                 2, //lengthInWords because the ssrc is present... (todo, should be 1 because the value is inserted directly into the header, doesn't matter because SetLengthInWordsMinusOne is called).
-                (Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(extensionData, out extensionSize) ? bytesInSourceList : 1 + extensionSize + bytesInSourceList)) //reasonForLeaving
+                (ArrayExtensions.IsNullOrEmpty(extensionData, out extensionSize) ? bytesInSourceList : 1 + extensionSize + bytesInSourceList)) //reasonForLeaving
         {
             #region Babble
 
@@ -446,7 +447,7 @@ namespace Media.UnitTests
 
                                     System.Diagnostics.Debug.Assert(sourceList.Skip(1).All(s => s == uint.MinValue), "Unexpected Source in SourceList");
 
-                                    System.Diagnostics.Debug.Assert(sourceList.ToArray().SequenceEqual(Enumerable.Concat<uint>(Common.Extensions.Linq.LinqExtensions.Yield((uint)RandomId), Enumerable.Repeat(uint.MinValue, SourceCounter))), "Unexpected Source in SourceList");
+                                    System.Diagnostics.Debug.Assert(sourceList.ToArray().SequenceEqual(Enumerable.Concat<uint>(LinqExtensions.Yield((uint)RandomId), Enumerable.Repeat(uint.MinValue, SourceCounter))), "Unexpected Source in SourceList");
                                 }
                             }
 

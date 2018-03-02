@@ -41,6 +41,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 
 #endregion
 
@@ -555,7 +556,7 @@ namespace Media.Common
                 //Todo, could improve with Flush api.
 
                 //Add it
-                AddMemory(new MemorySegment(Common.Extensions.Object.ObjectExtensions.ToArray<byte>(value)));
+                AddMemory(new MemorySegment(ObjectExtensions.ToArray<byte>(value)));
 
                 //Increase the position
                 ++m_Position;
@@ -662,7 +663,7 @@ namespace Media.Common
             long len;
 
             //If the buffer is null or empty return for now (dead space)...
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(buffer, out len)) return;
+            if (ArrayExtensions.IsNullOrEmpty(buffer, out len)) return;
 
             //If more data was specified than exists use len
             if (count > len) count = (int)len;

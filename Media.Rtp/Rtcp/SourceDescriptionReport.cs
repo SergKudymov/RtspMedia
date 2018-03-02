@@ -45,6 +45,7 @@ using System.Text;
 using Android.Content;
 using Media.Common;
 using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 using Media.Rtp.Rtcp;
 
 #endregion
@@ -322,8 +323,8 @@ namespace Media.Rtcp
                 //Media.Common.Extensions.Object.ObjectExtensions.ToArray<byte>((byte)itemType, (byte)octetCount);
 
                 //Project the sequence which must be less than Byte.MaxValue in count.
-                Data = Media.Common.Extensions.Linq.LinqExtensions.Yield((byte)itemType).
-                    Concat(Media.Common.Extensions.Linq.LinqExtensions.Yield((byte)octetCount)).
+                Data = LinqExtensions.Yield((byte)itemType).
+                    Concat(LinqExtensions.Yield((byte)octetCount)).
                     Concat(octets);
 
                 //Use the count obtained previously to generate a segment.
@@ -677,7 +678,7 @@ namespace Media.Rtcp
 
                                 while (--itemLength >= 0 && enumerator.MoveNext())
                                 {
-                                    chunkData = Enumerable.Concat(chunkData, Media.Common.Extensions.Linq.LinqExtensions.Yield(enumerator.Current));
+                                    chunkData = Enumerable.Concat(chunkData, LinqExtensions.Yield(enumerator.Current));
                                 }
                             }
                         }
@@ -687,7 +688,7 @@ namespace Media.Rtcp
                             {
                                 byte current = enumerator.Current;
 
-                                chunkData = Enumerable.Concat(chunkData, Media.Common.Extensions.Linq.LinqExtensions.Yield(current));
+                                chunkData = Enumerable.Concat(chunkData, LinqExtensions.Yield(current));
 
                                 if (current == SourceDescriptionItem.Null) break;
                             }
@@ -902,7 +903,7 @@ namespace Media.Rtcp
             }
 
             public SourceDescriptionChunk(int chunkIdentifier, SourceDescriptionItem item, bool shouldDispose = true) 
-                : this(chunkIdentifier, Media.Common.Extensions.Linq.LinqExtensions.Yield(item), shouldDispose) { }
+                : this(chunkIdentifier, LinqExtensions.Yield(item), shouldDispose) { }
 
             public SourceDescriptionChunk(int chunkIdentifier, bool shouldDispose = true, params SourceDescriptionItem[] items)
                 : this(chunkIdentifier, (IEnumerable<SourceDescriptionItem>)items, shouldDispose) { }

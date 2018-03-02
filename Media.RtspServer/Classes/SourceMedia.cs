@@ -38,7 +38,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Android.Media;
 using Media.Common.Classes.Disposables;
+using Media.Sdp;
 
 namespace Media.Rtsp.Server
 {
@@ -76,7 +78,7 @@ namespace Media.Rtsp.Server
         internal NetworkCredential m_SourceCred;
         internal List<string> m_Aliases = new List<string>();
         //internal bool m_Child = false;
-        public virtual Sdp.SessionDescription SessionDescription { get; protected set; }
+        public virtual SessionDescription SessionDescription { get; protected set; }
 
         //Maybe should be m_AllowUdp?
         internal bool m_ForceTCP;//= true; // To force clients to utilize TCP, Interleaved in Rtsp or Rtp
@@ -230,7 +232,7 @@ namespace Media.Rtsp.Server
 
         #region Events        
 
-        public delegate void FrameDecodedHandler(object sender, System.Drawing.Image decoded);
+        public delegate void FrameDecodedHandler(object sender, Image decoded);
 
         public delegate void DataDecodedHandler(object sender, byte[] decoded);
 
@@ -238,7 +240,7 @@ namespace Media.Rtsp.Server
 
         public event DataDecodedHandler DataDecoded;
 
-        internal void OnFrameDecoded(System.Drawing.Image decoded)
+        internal void OnFrameDecoded(Image decoded)
         {
             if (DecodeFrames && decoded != null && FrameDecoded != null)
             {

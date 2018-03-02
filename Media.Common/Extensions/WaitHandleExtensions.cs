@@ -38,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 using Media.Common.Classes;
 
-namespace Media.Common.Extensions.WaitHandle
+namespace Media.Common.Extensions
 {
     public static class WaitHandleExtensions
     {

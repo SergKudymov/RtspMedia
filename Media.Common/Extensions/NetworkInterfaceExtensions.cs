@@ -49,7 +49,7 @@ namespace Media.Common.Extensions.NetworkInterface
         {
             if (localAddress == null) throw new System.ArgumentNullException();
 
-            bool isMulticast = Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(localAddress);
+            bool isMulticast = IPAddressExtensions.IsMulticast(localAddress);
 
             //Iterate all NetworkInterfaves
             foreach (System.Net.NetworkInformation.NetworkInterface networkInterface in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
@@ -135,7 +135,7 @@ namespace Media.Common.Extensions.NetworkInterface
             if (object.ReferenceEquals(socket, null)) throw new System.ArgumentNullException("socket");
             else if (socket.Handle == System.IntPtr.Zero) return null;
             
-            System.Net.IPEndPoint localEndPoint = socket.IsBound.Equals(false) ? Common.Extensions.IPEndPoint.IPEndPointExtensions.Any : (System.Net.IPEndPoint)socket.LocalEndPoint;
+            System.Net.IPEndPoint localEndPoint = socket.IsBound.Equals(false) ? IPEndPointExtensions.Any : (System.Net.IPEndPoint)socket.LocalEndPoint;
 
             return GetNetworkInterface(localEndPoint);
         }

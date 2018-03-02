@@ -43,6 +43,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Media.Common;
+using Media.Common.Extensions;
 
 #endregion
 
@@ -1871,7 +1872,7 @@ namespace Media.Common
 
         public static long ReadBitsMSB(byte bits, int bitOffset, int bitCount)
         {
-            return (long)ReadBitsMSB(Common.Extensions.Object.ObjectExtensions.ToArray<byte>(bits), bitOffset, bitCount);
+            return (long)ReadBitsMSB(ObjectExtensions.ToArray<byte>(bits), bitOffset, bitCount);
         }
 
         [CLSCompliant(false)]
@@ -1930,7 +1931,7 @@ namespace Media.Common
 
         public static long ReadBitsLSB(byte bits, int bitOffset, int bitCount)
         {
-            return (long)ReadBitsLSB(Common.Extensions.Object.ObjectExtensions.ToArray<byte>(bits), bitOffset, bitCount);
+            return (long)ReadBitsLSB(ObjectExtensions.ToArray<byte>(bits), bitOffset, bitCount);
         }
 
         [CLSCompliant(false)]
@@ -3524,7 +3525,7 @@ namespace Media.UnitTests
             {
                 var left = Common.Binary.GreatestCommonDivisor(i, i + 1);
 
-                var right = Common.Extensions.Math.MathExtensions.GreatestCommonDivisor(i, i + 1);
+                var right = MathExtensions.GreatestCommonDivisor(i, i + 1);
 
                 if (left != right) throw new Exception("Invalid result!");
             }

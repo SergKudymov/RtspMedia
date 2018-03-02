@@ -33,6 +33,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * 
  * v//
  */
+
+using Media.Common.Classes;
+using Media.Common.Extensions;
+
 namespace Media.Rtp
 {
 	/// <summary>
@@ -101,7 +105,7 @@ namespace Media.Rtp
             //Must be assigned
             channel = default(byte);
 
-            if (Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(buffer)) return -1;
+            if (ArrayExtensions.IsNullOrEmpty(buffer)) return -1;
 
             //https://www.ietf.org/rfc/rfc2326.txt
 
@@ -222,15 +226,15 @@ namespace Media.Rtp
             else // There is no socket existing.
             {
                 //If the remote address is the broadcast address or the remote address is multicast
-                if (System.Net.IPAddress.Broadcast.Equals(remoteIp) || Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(remoteIp))
+                if (System.Net.IPAddress.Broadcast.Equals(remoteIp) || IPAddressExtensions.IsMulticast(remoteIp))
                 {
                     //This interface should be the interface you plan on using for the Rtp communication
-                    localIp = Media.Common.Extensions.Socket.SocketExtensions.GetFirstMulticastIPAddress(remoteIp.AddressFamily, out  localInterface);
+                    localIp = SocketExtensions.GetFirstMulticastIPAddress(remoteIp.AddressFamily, out  localInterface);
                 }
                 else
                 {
                     //This interface should be the interface you plan on using for the Rtp communication
-                    localIp = Media.Common.Extensions.Socket.SocketExtensions.GetFirstUnicastIPAddress(remoteIp.AddressFamily, out  localInterface);
+                    localIp = SocketExtensions.GetFirstUnicastIPAddress(remoteIp.AddressFamily, out  localInterface);
                 }
             }
 
@@ -261,7 +265,7 @@ namespace Media.Rtp
                 }
                 catch (System.Exception ex)
                 {
-                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(tc, "See Tag, Could not add the created TransportContext.", ex);
+                    TaggedExceptionExtensions.RaiseTaggedException(tc, "See Tag, Could not add the created TransportContext.", ex);
                 }
             }
 

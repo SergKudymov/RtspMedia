@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using Media.Common.Extensions;
 
 namespace Media.Rtsp.Server.MediaTypes
 {
@@ -171,12 +172,12 @@ namespace Media.Rtsp.Server.MediaTypes
             : this(name, location, null, AuthenticationSchemes.None, rtpProtocolType, bufferSize, specificMedia, startTime, endTime, perPacket) { }
 
         public RtspSource(string name, string sourceLocation, NetworkCredential credential = null, AuthenticationSchemes authType = AuthenticationSchemes.None, Rtsp.RtspClient.ClientProtocolType? rtpProtocolType = null, int bufferSize = RtspClient.DefaultBufferSize, Sdp.MediaType? specificMedia = null, TimeSpan? startTime = null, TimeSpan? endTime = null, bool perPacket = false)
-            : this(name, new Uri(sourceLocation), credential, authType, rtpProtocolType, bufferSize, specificMedia.HasValue ? Common.Extensions.Linq.LinqExtensions.Yield(specificMedia.Value) : null, startTime, endTime, perPacket)
+            : this(name, new Uri(sourceLocation), credential, authType, rtpProtocolType, bufferSize, specificMedia.HasValue ? LinqExtensions.Yield(specificMedia.Value) : null, startTime, endTime, perPacket)
         {
             //Check for a null Credential and UserInfo in the Location given.
             if (credential == null && !string.IsNullOrWhiteSpace(m_Source.UserInfo))
             {
-                RtspClient.Credential = Media.Common.Extensions.Uri.UriExtensions.ParseUserInfo(m_Source);
+                RtspClient.Credential = UriExtensions.ParseUserInfo(m_Source);
 
                 //Remove the user info from the location
                 RtspClient.CurrentLocation = new Uri(RtspClient.CurrentLocation.AbsoluteUri.Replace(RtspClient.CurrentLocation.UserInfo + (char)Common.ASCII.AtSign, string.Empty).Replace(RtspClient.CurrentLocation.UserInfo, string.Empty));

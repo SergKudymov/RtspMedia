@@ -36,7 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.IPEndPoint
+namespace Media.Common.Extensions
 {
     public static class IPEndPointExtensions
     {
@@ -48,7 +48,7 @@ namespace Media.Common.Extensions.IPEndPoint
 
         public static readonly System.Net.IPEndPoint IPv6Any = new System.Net.IPEndPoint(System.Net.IPAddress.IPv6Any, 0);
 
-        public static bool IsMulticast(this System.Net.IPEndPoint endPoint) { return Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(endPoint.Address); }
+        public static bool IsMulticast(this System.Net.IPEndPoint endPoint) { return IPAddressExtensions.IsMulticast(endPoint.Address); }
 
         public static System.Uri ToUri(this System.Net.IPEndPoint endPoint, string scheme = null)
         {

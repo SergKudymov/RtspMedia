@@ -36,7 +36,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
-namespace Media.Common.Extensions.DateTime
+namespace Media.Common.Extensions
 {
     /// <summary>
     /// Defines methods for working with <see cref="System.DateTime"/>

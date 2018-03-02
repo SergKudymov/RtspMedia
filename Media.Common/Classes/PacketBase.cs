@@ -1,4 +1,5 @@
 ﻿using Media.Common.Classes.Disposables;
+using Media.Common.Extensions;
 
 namespace Media.Common.Classes
 {
@@ -469,7 +470,7 @@ namespace Media.Common.Classes
 
                 long length;
 
-                Media.Common.Extensions.Array.ArrayExtensions.IsNullOrEmpty(m_OwnedOctets, out length);
+                ArrayExtensions.IsNullOrEmpty(m_OwnedOctets, out length);
 
                 return length;
             }

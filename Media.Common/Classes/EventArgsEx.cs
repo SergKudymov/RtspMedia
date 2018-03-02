@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Media.Common.Extensions;
 
 namespace Media.Common.Classes
 {
@@ -268,7 +269,7 @@ namespace Media.Common.Classes
     {
         internal static System.Delegate CreateDelegate(this EventReferenceInformation<System.Delegate> toFire, Type delegateType = null)
         {
-            return toFire.Event.Method.CreateDelegate(delegateType ?? Media.Common.Extensions.Delegate.DelegateExtensions.TypeOfDelegate);
+            return toFire.Event.Method.CreateDelegate(delegateType ?? DelegateExtensions.TypeOfDelegate);
         }
 
         internal static System.Delegate CreateDelegate<T>(this IEvent @event, T t)

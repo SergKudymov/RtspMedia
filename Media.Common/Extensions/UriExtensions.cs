@@ -38,7 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 using Media.Common.Classes.Text;
 
-namespace Media.Common.Extensions.Uri
+namespace Media.Common.Extensions
 {
     public static class UriExtensions
     {

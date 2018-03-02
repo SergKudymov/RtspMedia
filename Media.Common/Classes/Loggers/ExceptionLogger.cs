@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Media.Common.Extensions;
 
 namespace Media.Common.Classes.Loggers
 {
@@ -65,7 +66,7 @@ namespace Media.Common.Classes.Loggers
 
             if (IsDisposed.Equals(false)) return;
 
-            LastLog = LastException = Media.Common.Extensions.Exception.ExceptionExtensions.NilException;
+            LastLog = LastException = ExceptionExtensions.NilException;
         }
 
     }
