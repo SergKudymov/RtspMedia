@@ -606,8 +606,10 @@ namespace Media.Rtp
             public bool IsRtcpEnabled = true;
 
             //The EndPoints connected to (once connected don't need the Ports unless 0 is used to determine the port)
-            internal protected EndPoint LocalRtp, LocalRtcp, RemoteRtp, RemoteRtcp;
-            
+            public EndPoint LocalRtp;
+            public EndPoint LocalRtcp;
+            internal protected EndPoint RemoteRtp, RemoteRtcp;
+
             //bytes and packet counters
             internal long RfcRtpBytesSent, RfcRtpBytesRecieved, 
                          RtpBytesSent, RtpBytesRecieved,
@@ -650,8 +652,11 @@ namespace Media.Rtp
             public TimeSpan m_SendInterval = DefaultReportInterval;
 
             internal TimeSpan m_ReceiveInterval = DefaultReportInterval,
-                m_InactiveTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan,
-                m_StartTime = TimeSpan.Zero, m_EndTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan;
+                m_InactiveTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan;
+
+            public TimeSpan m_StartTime = TimeSpan.Zero;
+
+            public TimeSpan m_EndTime = Media.Common.Extensions.TimeSpan.TimeSpanExtensions.InfiniteTimeSpan;
             //Used to allow a specific reporting interval (would proably need varaibles for send and receive to allow full customization...)
                 //m_ContextReportInterval = DefaultReportInterval;
 
@@ -687,8 +692,7 @@ namespace Media.Rtp
             /// To allow multiple receivers as set by <see cref="MaximumRemoteIdentities"/>
             /// </summary>
             //public readonly List<int> Recievers = new List<int>();
-
-            internal readonly HashSet<System.Net.IPAddress> MulticastGroups = new HashSet<IPAddress>();
+            public readonly HashSet<System.Net.IPAddress> MulticastGroups = new HashSet<IPAddress>();
 
             #endregion
 
@@ -1234,7 +1238,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal protected set;
+                set;
             }
 
             /// <summary>
@@ -1246,7 +1250,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal protected set;
+                set;
             }
 
             /// <summary>
@@ -1338,7 +1342,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal set;
+                set;
             }
 
             /// <summary>
@@ -1476,7 +1480,7 @@ namespace Media.Rtp
                 get { return (short)m_SequenceNumber; }
 
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal protected set { m_SequenceNumber = (ushort)value; }
+                set { m_SequenceNumber = (ushort)value; }
             }
 
             public int SendSequenceNumber
@@ -1492,7 +1496,7 @@ namespace Media.Rtp
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
                 get;
                 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-                internal set;
+                set;
             }
 
             public int SenderRtpTimestamp

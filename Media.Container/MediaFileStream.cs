@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Collections.Generic;
 using Media.Common;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
 
 namespace Media.Container
 {
@@ -27,7 +29,7 @@ namespace Media.Container
         {
             if (string.IsNullOrWhiteSpace(extenstion)) return false;
 
-            if (extenstion[0] == (char)Common.ASCII.Period) extenstion = extenstion.Substring(1);
+            if (extenstion[0] == (char)ASCII.Period) extenstion = extenstion.Substring(1);
 
             try
             {
@@ -45,7 +47,7 @@ namespace Media.Container
         {
             if (string.IsNullOrWhiteSpace(extenstion)) return false;
 
-            if (extenstion[0] == (char)Common.ASCII.Period) extenstion = extenstion.Substring(1);
+            if (extenstion[0] == (char)ASCII.Period) extenstion = extenstion.Substring(1);
 
             return m_ExtensionMap.Remove(extenstion);
         }
@@ -273,7 +275,7 @@ namespace Media.Container
 
             Buffering = true;
 
-            Common.Extensions.Stream.StreamExtensions.ITransactionResult result = Common.Extensions.Stream.StreamExtensions.BeginCopyTo(stream, this, size, WriteAt);
+            StreamExtensions.ITransactionResult result = StreamExtensions.BeginCopyTo(stream, this, size, WriteAt);
 
             //Race, the transaction might have already finished on small files...
             if (result.IsCompleted) IStreamCopyTransactionResultCompleted(this, result);
@@ -321,7 +323,7 @@ namespace Media.Container
             };
         }
 
-        void IStreamCopyTransactionResultCompleted(object sender, Common.Extensions.Stream.StreamExtensions.ITransactionResult t)
+        void IStreamCopyTransactionResultCompleted(object sender, StreamExtensions.ITransactionResult t)
         {
             Buffering = false;
 

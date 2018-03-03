@@ -39,6 +39,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using Media.Common.Classes.Text;
 using Media.Common.Extensions;
 
 namespace Media.Rtsp.Server.MediaTypes
@@ -180,7 +181,7 @@ namespace Media.Rtsp.Server.MediaTypes
                 RtspClient.Credential = UriExtensions.ParseUserInfo(m_Source);
 
                 //Remove the user info from the location
-                RtspClient.CurrentLocation = new Uri(RtspClient.CurrentLocation.AbsoluteUri.Replace(RtspClient.CurrentLocation.UserInfo + (char)Common.ASCII.AtSign, string.Empty).Replace(RtspClient.CurrentLocation.UserInfo, string.Empty));
+                RtspClient.CurrentLocation = new Uri(RtspClient.CurrentLocation.AbsoluteUri.Replace(RtspClient.CurrentLocation.UserInfo + (char)ASCII.AtSign, string.Empty).Replace(RtspClient.CurrentLocation.UserInfo, string.Empty));
             }
         }
 

@@ -72,8 +72,12 @@ namespace Media.Sdp
             NewLine = (char)ASCII.NewLine;
 
         internal static string
-            ForwardSlashString = new string(ForwardSlash, 1),
-            SpaceString = new string(Space, 1),
+            ForwardSlashString = new string(ForwardSlash, 1);
+
+        public static string
+            SpaceString = new string(Space, 1);
+
+        internal static string
             WildcardString = new string(Asterisk, 1),
             LineFeedString = new string(LineFeed, 1), 
             CarriageReturnString = new string(NewLine, 1),

@@ -50,7 +50,7 @@ namespace Media.Rtp
         //Buffer for data
         //Used in ReceiveData, Each TransportContext gets a chance to receive into the buffer, when the recieve completes the data is parsed if there is any then the next TransportContext goes.
         //Doing this in parallel doesn't really offset much because the decoder must be able to handle the data and if you back log the decoder you are just wasting cycles.        
-        internal Common.MemorySegment m_Buffer;
+        public Common.MemorySegment m_Buffer;
 
         //Todo, ThreadPriorityInformation
 
@@ -80,7 +80,7 @@ namespace Media.Rtp
         /// Any TransportContext's which are added go here for removal. This list can never be null.
         /// </summary>
         /// <notes>This possibly should be sorted but sorted lists cannot contain duplicates.</notes>
-        internal readonly System.Collections.Generic.List<TransportContext> TransportContexts = new System.Collections.Generic.List<TransportContext>();
+        public readonly System.Collections.Generic.List<TransportContext> TransportContexts = new System.Collections.Generic.List<TransportContext>();
 
         /// <summary>
         /// Unique id assigned to each RtpClient instance. (16 byte overhead)

@@ -38,6 +38,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
 
 namespace Media.Rtsp
 {
@@ -817,7 +819,7 @@ namespace Media.Rtsp
                     while (remaining > 0)
                     {
                         //Receive remaining more if there is a socket otherwise use the remaining data in the buffer when no socket is given.
-                        justReceived = Media.Common.Extensions.Socket.SocketExtensions.AlignedReceive(buffer.Array, offset, remaining, socket, out error);
+                        justReceived = SocketExtensions.AlignedReceive(buffer.Array, offset, remaining, socket, out error);
 
                         //If anything was present then add it to the body.
                         if (justReceived > 0)
@@ -869,7 +871,7 @@ namespace Media.Rtsp
 
             //If there is a header parse it's value.
             //Should use EncodingExtensions
-            if (false.Equals(int.TryParse(Media.Common.ASCII.ExtractNumber(sequenceNumber), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out m_CSeq)))
+            if (false.Equals(int.TryParse(ASCII.ExtractNumber(sequenceNumber), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out m_CSeq)))
             {
                 //There was not a content-length in the format '1234'
 
@@ -1241,7 +1243,7 @@ namespace Media.UnitTests
         public void TestMessageSerializationAndDeserializationFromHexString()
         {
             //Make a byte[] from the hex string
-            byte[] bytes = Media.Common.Extensions.String.StringExtensions.HexStringToBytes("525453502f312e3020323030204f4b0d0a435365633a20310d0a5075626c69633a2044455343524942452c2054454152444f574e2c2053455455502c20504c41592c2050415553450d0a0d0a");
+            byte[] bytes = StringExtensions.HexStringToBytes("525453502f312e3020323030204f4b0d0a435365633a20310d0a5075626c69633a2044455343524942452c2054454152444f574e2c2053455455502c20504c41592c2050415553450d0a0d0a");
 
             //Make a message from the bytes
             using (Media.Rtsp.RtspMessage serialized = new Media.Rtsp.RtspMessage(bytes))

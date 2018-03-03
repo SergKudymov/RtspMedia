@@ -253,8 +253,9 @@ namespace Media.Http
 
         protected bool m_StatusLineParsed, m_HeadersParsed;
 
-        internal char[] m_EncodedLineEnds = UTF8.LineEndingCharacters,
-            m_EncodedWhiteSpace = UTF8.WhiteSpaceCharacters,
+        public char[] m_EncodedLineEnds = UTF8.LineEndingCharacters;
+
+        internal char[] m_EncodedWhiteSpace = UTF8.WhiteSpaceCharacters,
             m_EncodedForwardSlash = UTF8.ForwardSlashCharacters,
             m_EncodedColon = UTF8.ColonCharacters,
             m_EncodedSemiColon = UTF8.SemiColonCharacters,

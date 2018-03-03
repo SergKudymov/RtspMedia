@@ -262,7 +262,8 @@ namespace Media.Rtp
         /// <param name="force">Indicates if the call should be forced. <see cref="IsRtcpEnabled"/>, when true the report will also not be stored</param>
         /// <returns></returns>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        internal protected /*virtual*/ int SendGoodbye(TransportContext context, byte[] reasonForLeaving = null, int? ssrc = null, bool force = false, RFC3550.SourceList sourceList = null, bool empty = false)
+        public
+/*virtual*/ int SendGoodbye(TransportContext context, byte[] reasonForLeaving = null, int? ssrc = null, bool force = false, RFC3550.SourceList sourceList = null, bool empty = false)
         {
             //Check if the Goodbye can be sent.
             if (IsDisposed //If the RtpClient is disposed 
@@ -383,7 +384,8 @@ namespace Media.Rtp
         /// <param name="sourceId"></param>
         /// <returns>The context which was identified or null if no context was found.</returns>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        internal protected /*virtual*/ TransportContext GetContextBySourceId(int sourceId)
+        public
+/*virtual*/ TransportContext GetContextBySourceId(int sourceId)
         {
             if (IsDisposed) return null;
 
@@ -418,7 +420,8 @@ namespace Media.Rtp
         ////}
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        internal protected /*virtual*/ TransportContext GetContextByChannels(params byte[] channels)
+        public
+/*virtual*/ TransportContext GetContextByChannels(params byte[] channels)
         {
             if (IsDisposed) return null;
 
@@ -2153,9 +2156,10 @@ namespace Media.Rtp
             }
         }
 
-        internal int m_SignalOffset = -1, m_SignalCount = -1;
+        public int m_SignalOffset = -1;
+        public int m_SignalCount = -1;
 
-        internal System.Net.Sockets.Socket m_SignalSocket;
+        public System.Net.Sockets.Socket m_SignalSocket;
 
         bool DoSignalWork(/*ref out*/)
         {

@@ -42,10 +42,14 @@ using System.Linq;
 using Media.Common;
 using System.Net;
 using System.Net.Sockets;
-using Media.Rtcp;
-using Media.Rtp;
 using Media.Sdp;
 using System.Threading;
+using Media.Common.Classes;
+using Media.Common.Classes.Disposables;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
+using Media.Rtp;
+using Enum = System.Enum;
 
 namespace Media.Rtsp
 {
@@ -54,7 +58,7 @@ namespace Media.Rtsp
     /// http://www.ietf.org/rfc/rfc2326.txt
     /// Provides facilities for communication with an RtspServer to establish one or more Rtp Transport Channels.
     /// </summary>
-    public class RtspClient : Common.SuppressedFinalizerDisposable, Media.Common.ISocketReference
+    public class RtspClient : SuppressedFinalizerDisposable, Media.Common.ISocketReference
     {
 
         //Todo use SocketConfiguration
@@ -71,10 +75,10 @@ namespace Media.Rtsp
             if (false.Equals(Media.Common.Extensions.RuntimeExtensions.IsAndroid))
             {
                 //Ensure the address can be re-used
-                Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableAddressReuse(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableAddressReuse(socket));
 
                 //Windows >= 10 and Some Unix
-                Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableUnicastPortReuse(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableUnicastPortReuse(socket));
             }
 
             //It was reported that Mono on iOS has a bug with SendBufferSize, ReceiveBufferSize and by looking further possibly SetSocketOption in general...
@@ -82,43 +86,43 @@ namespace Media.Rtsp
             //SendBufferSize,ReceiveBufferSize and SetSocketOption is supposedly fixed in the latest versions but still do too much option verification...
 
             //Don't buffer send.
-            Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.SendBufferSize = 0);
+            ExceptionExtensions.ResumeOnError(() => socket.SendBufferSize = 0);
 
             //Don't buffer receive.
-            Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.ReceiveBufferSize = 0);
+            ExceptionExtensions.ResumeOnError(() => socket.ReceiveBufferSize = 0);
 
             //Better performance for 1 core...
-            if (System.Environment.ProcessorCount <= 1) Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.UseOnlyOverlappedIO = true);
+            if (System.Environment.ProcessorCount <= 1) ExceptionExtensions.ResumeOnError(() => socket.UseOnlyOverlappedIO = true);
 
             //Dont fragment
-            if (socket.AddressFamily == AddressFamily.InterNetwork) Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => socket.DontFragment = true);
+            if (socket.AddressFamily == AddressFamily.InterNetwork) ExceptionExtensions.ResumeOnError(() => socket.DontFragment = true);
 
             //Rtsp over Tcp
             if (socket.ProtocolType == ProtocolType.Tcp)
             {
                 // Set option that allows socket to close gracefully without lingering.
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableLinger(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableLinger(socket));
 
                 //Allow more than one byte of urgent data, maybe not supported on the stack.
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpExpedited(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpExpedited(socket));
 
                 //Receive any out of band data in the normal data stream, maybe not supported on the stack
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpOutOfBandDataInLine(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpOutOfBandDataInLine(socket));
 
                 //If both send and receieve buffer size are 0 then there is no coalescing when nagle's algorithm is disabled
-                Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableTcpNagelAlgorithm(socket));
+                ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableTcpNagelAlgorithm(socket));
 
                 //Handle options which are known to be different per Operating System
                 if (Common.Extensions.OperatingSystemExtensions.IsWindows)
                 {
                     //Retransmit for 0 sec.
-                    Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableTcpRetransmissions(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableTcpRetransmissions(socket));
 
                     // Enable No Syn Retries
-                    Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpNoSynRetries(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpNoSynRetries(socket));
 
                     // Set OffloadPreferred
-                    Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.SetTcpOffloadPreference(socket));
+                    ExceptionExtensions.ResumeOnError(() => SocketExtensions.SetTcpOffloadPreference(socket));
 
                     //Done in ProcessEndConnect based on ConnectionTime
                     //Enable Congestion Algorithm (when there is not enough bandwidth this sometimes helps)
@@ -290,7 +294,7 @@ namespace Media.Rtsp
         public Common.ILogging Logger;
 
         /// <summary>
-        /// The value passed to the <see cref="DateTime.ToString"/> method when <see cref="DateRequests"/> is true.
+        /// The value passed to the <see cref="ToString{T}"/> method when <see cref="DateRequests"/> is true.
         /// </summary>
         public string DateFormat = DefaultDateFormat;
 
@@ -584,13 +588,13 @@ namespace Media.Rtsp
                     if (m_RtspSocket.ProtocolType == ProtocolType.Tcp)
                     {
                         //Do not re-transmit
-                        Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.DisableTcpRetransmissions(m_RtspSocket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.DisableTcpRetransmissions(m_RtspSocket));
 
                         // Enable No Syn Retries
-                        Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpNoSynRetries(m_RtspSocket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpNoSynRetries(m_RtspSocket));
 
                         // Set OffloadPreferred
-                        Media.Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.SetTcpOffloadPreference(m_RtspSocket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.SetTcpOffloadPreference(m_RtspSocket));
                     }
 
                     //SO_CONNECT_TIME only exists on Windows...
@@ -1014,7 +1018,7 @@ namespace Media.Rtsp
                 }
                 catch (Exception ex)
                 {
-                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Could not resolve host from the given location. See InnerException.", ex);
+                    TaggedExceptionExtensions.RaiseTaggedException(this, "Could not resolve host from the given location. See InnerException.", ex);
 
                     throw;
                 }
@@ -1220,8 +1224,8 @@ namespace Media.Rtsp
             if (location.IsAbsoluteUri.Equals(false))
             {
                 if (object.ReferenceEquals(existing, null)) throw new ArgumentException("Must be absolute unless a socket is given", "location");
-                if (existing.Connected) location = Media.Common.Extensions.IPEndPoint.IPEndPointExtensions.ToUri(((IPEndPoint)existing.RemoteEndPoint), (existing.ProtocolType == ProtocolType.Udp ? RtspMessage.UnreliableTransportScheme : RtspMessage.ReliableTransportScheme));
-                else if (existing.IsBound) location = Media.Common.Extensions.IPEndPoint.IPEndPointExtensions.ToUri(((IPEndPoint)existing.LocalEndPoint), (existing.ProtocolType == ProtocolType.Udp ? RtspMessage.UnreliableTransportScheme : RtspMessage.ReliableTransportScheme));
+                if (existing.Connected) location = IPEndPointExtensions.ToUri(((IPEndPoint)existing.RemoteEndPoint), (existing.ProtocolType == ProtocolType.Udp ? RtspMessage.UnreliableTransportScheme : RtspMessage.ReliableTransportScheme));
+                else if (existing.IsBound) location = IPEndPointExtensions.ToUri(((IPEndPoint)existing.LocalEndPoint), (existing.ProtocolType == ProtocolType.Udp ? RtspMessage.UnreliableTransportScheme : RtspMessage.ReliableTransportScheme));
                 else throw new InvalidOperationException("location must be specified when existing socket must be connected or bound.");
             }
 
@@ -1301,10 +1305,10 @@ namespace Media.Rtsp
                 string.IsNullOrWhiteSpace(CurrentLocation.UserInfo).Equals(false))
             {
                 //Parse the given cred from the location
-                Credential = Media.Common.Extensions.Uri.UriExtensions.ParseUserInfo(CurrentLocation);
+                Credential = UriExtensions.ParseUserInfo(CurrentLocation);
 
                 //Remove the user info from the location (may not have @?)
-                m_InitialLocation = CurrentLocation = new Uri(CurrentLocation.AbsoluteUri.Replace(CurrentLocation.UserInfo + (char)Common.ASCII.AtSign, string.Empty).Replace(CurrentLocation.UserInfo, string.Empty));
+                m_InitialLocation = CurrentLocation = new Uri(CurrentLocation.AbsoluteUri.Replace(CurrentLocation.UserInfo + (char)ASCII.AtSign, string.Empty).Replace(CurrentLocation.UserInfo, string.Empty));
             }
         }
 
@@ -2245,7 +2249,7 @@ namespace Media.Rtsp
                                             if (interleaved.IsDisposed && 
                                                 interleaved.IsPersistent)
                                             {
-                                                Common.BaseDisposable.SetShouldDispose(interleaved, false);
+                                                BaseDisposable.SetShouldDispose(interleaved, false);
                                             }
 
                                             break;
@@ -2413,7 +2417,7 @@ namespace Media.Rtsp
                 {
                     if (Common.IDisposedExtensions.IsNullOrDisposed(optionsResponse) ||
                         optionsResponse.ParsedProtocol.Equals(RtspMessage.MessageIdentifier) && // Fake protection from GStreamer
-                        optionsResponse.RtspStatusCode > RtspStatusCode.OK) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(optionsResponse, "Options Response was null or not OK. See Tag.");
+                        optionsResponse.RtspStatusCode > RtspStatusCode.OK) TaggedExceptionExtensions.RaiseTaggedException(optionsResponse, "Options Response was null or not OK. See Tag.");
                     else optionsResponse.IsPersistent = false;
                 }
 
@@ -2424,7 +2428,7 @@ namespace Media.Rtsp
             if (SupportedMethods.Count > 0 && false.Equals(SupportedMethods.Contains(RtspMethod.DESCRIBE.ToString())) &&
                 Common.IDisposedExtensions.IsNullOrDisposed(SessionDescription) && SupportedFeatures.Count.Equals(0))
             {
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(SupportedMethods, "SupportedMethods does not allow Describe and SessionDescription is null. See Tag with SupportedMessages.");
+                TaggedExceptionExtensions.RaiseTaggedException(SupportedMethods, "SupportedMethods does not allow Describe and SessionDescription is null. See Tag with SupportedMessages.");
             }
 
         Describe:
@@ -2440,7 +2444,7 @@ namespace Media.Rtsp
 
                     if (Common.IDisposedExtensions.IsNullOrDisposed(describe) || 
                         describe.RtspStatusCode == RtspStatusCode.Unknown ||
-                        describe.RtspStatusCode > RtspStatusCode.OK) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(describe, "Describe Response was null or not OK. See Tag.");
+                        describe.RtspStatusCode > RtspStatusCode.OK) TaggedExceptionExtensions.RaiseTaggedException(describe, "Describe Response was null or not OK. See Tag.");
 
                 }
             }
@@ -2647,7 +2651,7 @@ namespace Media.Rtsp
 
                                     int retry;
 
-                                    if (false.Equals(string.IsNullOrWhiteSpace(retryAfter)) && int.TryParse(Media.Common.ASCII.ExtractNumber(retryAfter), out retry))
+                                    if (false.Equals(string.IsNullOrWhiteSpace(retryAfter)) && int.TryParse(ASCII.ExtractNumber(retryAfter), out retry))
                                     {
 
                                         //Warning, long sleep possible, should give the application the change to decide
@@ -2674,7 +2678,7 @@ namespace Media.Rtsp
                                     }
 
                                     //Not authorized anymore...
-                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(setup ?? m_LastTransmitted, "Credentials no longer authorized.");
+                                    TaggedExceptionExtensions.RaiseTaggedException(setup ?? m_LastTransmitted, "Credentials no longer authorized.");
 
                                     return;
                                 }
@@ -2755,7 +2759,7 @@ namespace Media.Rtsp
                                     {
                                         //Todo, Remove all existing contexts
 
-                                        Media.Common.TaggedExceptionExtensions.RaiseTaggedException(play, "Cannot Start Playing, See Tag.");
+                                        TaggedExceptionExtensions.RaiseTaggedException(play, "Cannot Start Playing, See Tag.");
 
                                         goto Setup;
                                     }
@@ -2766,7 +2770,7 @@ namespace Media.Rtsp
                                 }
                             case RtspStatusCode.ServiceUnavailable:
                                 {
-                                    if (serviceUnavailable && triedAgain) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(play, "Cannot Start Playing, See Tag.");
+                                    if (serviceUnavailable && triedAgain) TaggedExceptionExtensions.RaiseTaggedException(play, "Cannot Start Playing, See Tag.");
 
                                     else serviceUnavailable = true;
 
@@ -2776,7 +2780,7 @@ namespace Media.Rtsp
 
                                     int retry;
 
-                                    if (false.Equals(string.IsNullOrWhiteSpace(retryAfter)) && int.TryParse(Media.Common.ASCII.ExtractNumber(retryAfter), out retry))
+                                    if (false.Equals(string.IsNullOrWhiteSpace(retryAfter)) && int.TryParse(ASCII.ExtractNumber(retryAfter), out retry))
                                     {
                                         System.Threading.Thread.Sleep(System.TimeSpan.FromSeconds(retry));
                                     }
@@ -3233,7 +3237,7 @@ namespace Media.Rtsp
                     if (ConnectionTime.TotalMilliseconds >= DefaultConnectionTime.TotalMilliseconds)
                     {
                         // Enable CongestionAlgorithm
-                        Common.Extensions.Exception.ExceptionExtensions.ResumeOnError(() => Media.Common.Extensions.Socket.SocketExtensions.EnableTcpCongestionAlgorithm(m_RtspSocket));
+                        ExceptionExtensions.ResumeOnError(() => SocketExtensions.EnableTcpCongestionAlgorithm(m_RtspSocket));
                     }
                 }
 
@@ -3458,11 +3462,11 @@ namespace Media.Rtsp
 
             //Get the tokens in the header
             //Todo, use response.m_StringWhiteSpace to ensure the encoding is parsed correctly...
-            string[] baseParts = authenticateHeader.Split(Media.Common.Extensions.Linq.LinqExtensions.Yield(((char)Common.ASCII.Space)).ToArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+            string[] baseParts = authenticateHeader.Split(LinqExtensions.Yield(((char)ASCII.Space)).ToArray(), 2, StringSplitOptions.RemoveEmptyEntries);
 
             //If nothing was in the header then return the response given.
             if (baseParts.Length.Equals(0)) return response;
-            else if (baseParts.Length > 1) baseParts = Media.Common.Extensions.Linq.LinqExtensions.Yield(baseParts[0]).Concat(baseParts[1].Split(RtspHeaders.Comma).Select(s => s.Trim())).ToArray();
+            else if (baseParts.Length > 1) baseParts = LinqExtensions.Yield(baseParts[0]).Concat(baseParts[1].Split(RtspHeaders.Comma).Select(s => s.Trim())).ToArray();
 
             if (string.Compare(baseParts[0].Trim(), RtspHeaderFields.Authorization.Basic, true).Equals(0) || m_AuthenticationScheme == AuthenticationSchemes.Basic)
             {
@@ -3493,7 +3497,7 @@ namespace Media.Rtsp
                 {
                     algorithm = algorithm.Trim();
                     if (string.Compare(algorithm.Substring(9), "MD5", true).Equals(0)) algorithm = "MD5";
-                    else Media.Common.TaggedExceptionExtensions.RaiseTaggedException(response, "See the response in the Tag.", new NotSupportedException("The algorithm indicated in the authenticate header is not supported at this time. Create an issue for support."));
+                    else TaggedExceptionExtensions.RaiseTaggedException(response, "See the response in the Tag.", new NotSupportedException("The algorithm indicated in the authenticate header is not supported at this time. Create an issue for support."));
                 }
 
                 string username = baseParts.Where(p => p.StartsWith(RtspHeaderFields.Authorization.Attributes.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
@@ -3825,7 +3829,7 @@ namespace Media.Rtsp
                         m_RtspSocket.Poll(m_SocketPollMicroseconds >> 4, SelectMode.SelectWrite))
                     {
                         //Send all the data now
-                        sent += Common.Extensions.Socket.SocketExtensions.SendTo(buffer, 0, length, m_RtspSocket, m_RemoteRtsp, SocketFlags.None, out error);
+                        sent += SocketExtensions.SendTo(buffer, 0, length, m_RtspSocket, m_RemoteRtsp, SocketFlags.None, out error);
                     }
 
                     #region Handle SocketError.Send
@@ -4327,12 +4331,12 @@ namespace Media.Rtsp
                                     if (EchoXHeaders)
                                     {
                                         //iterate for any X headers 
-                                        foreach (string xHeader in m_LastTransmitted.GetHeaders().Where(h => h.Length > 2 && h[1] == Common.ASCII.HyphenSign && char.ToLower(h[0]) == 'x'))
+                                        foreach (string xHeader in m_LastTransmitted.GetHeaders().Where(h => h.Length > 2 && h[1] == ASCII.HyphenSign && char.ToLower(h[0]) == 'x'))
                                         {
                                             //If contained already then update
                                             if (AdditionalHeaders.ContainsKey(xHeader))
                                             {
-                                                AdditionalHeaders[xHeader] += ((char)Common.ASCII.SemiColon).ToString() + m_LastTransmitted.GetHeader(xHeader).Trim();
+                                                AdditionalHeaders[xHeader] += ((char)ASCII.SemiColon).ToString() + m_LastTransmitted.GetHeader(xHeader).Trim();
                                             }
                                             else
                                             {
@@ -4550,7 +4554,7 @@ namespace Media.Rtsp
 
                 if (object.ReferenceEquals(response, null) && isClosing.Equals(false) && false.Equals(IsPlaying))
                 {
-                    if (options.Location.Equals(RtspMessage.Wildcard)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to get options, See InnerException.", new Common.TaggedException<RtspMessage>(response, "See Tag for Response."));
+                    if (options.Location.Equals(RtspMessage.Wildcard)) TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to get options, See InnerException.", new TaggedException<RtspMessage>(response, "See Tag for Response."));
                     else return SendOptions(RtspMessage.Wildcard, sessionId, connection);
                 }
 
@@ -4604,11 +4608,11 @@ namespace Media.Rtsp
                     //Handle no response
                     //If the remote end point is just sending Interleaved Binary Data out of no where it is possible to continue without a SessionDescription
 
-                    if (Common.IDisposedExtensions.IsNullOrDisposed(response = response ?? m_LastTransmitted)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(describe, "Unable to describe media, no response to DESCRIBE request. The request is in the Tag property.");
+                    if (Common.IDisposedExtensions.IsNullOrDisposed(response = response ?? m_LastTransmitted)) TaggedExceptionExtensions.RaiseTaggedException(describe, "Unable to describe media, no response to DESCRIBE request. The request is in the Tag property.");
                     else response.IsPersistent = true;
 
                     //Handle NotFound
-                    if (response.RtspStatusCode == RtspStatusCode.NotFound) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(describe, "Unable to describe media, NotFound. The response is in the Tag property.");
+                    if (response.RtspStatusCode == RtspStatusCode.NotFound) TaggedExceptionExtensions.RaiseTaggedException(describe, "Unable to describe media, NotFound. The response is in the Tag property.");
 
                     if (response.IsComplete.Equals(false))
                     {
@@ -4660,7 +4664,7 @@ namespace Media.Rtsp
                                     false.Equals(string.IsNullOrEmpty(contentType)) &&
                                     string.Compare(contentType.TrimStart(), Sdp.SessionDescription.MimeType, true).Equals(0).Equals(false))
                                 {
-                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(response.RtspStatusCode, "Unable to describe media. The StatusCode is in the Tag property.");
+                                    TaggedExceptionExtensions.RaiseTaggedException(response.RtspStatusCode, "Unable to describe media. The StatusCode is in the Tag property.");
                                 }
                                 //else if (response.IsComplete && string.IsNullOrWhiteSpace(response.Body))
                                 //{
@@ -4731,7 +4735,7 @@ namespace Media.Rtsp
                                             //Try to make it absolute to the CurrentLocation and if it cannot then raise an exception
                                             if (Uri.TryCreate(m_CurrentLocation, baseUri, out baseUri).Equals(false))
                                             {
-                                                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(contentBase, "See Tag. Can't parse ContentBase header.");
+                                                TaggedExceptionExtensions.RaiseTaggedException(contentBase, "See Tag. Can't parse ContentBase header.");
                                             }
 
                                         }
@@ -4740,7 +4744,7 @@ namespace Media.Rtsp
                                             //Check for the host to change
                                             if (baseUri.Host.Equals(m_CurrentLocation.Host, StringComparison.OrdinalIgnoreCase).Equals(false))
                                             {
-                                                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another host.", new Common.TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
+                                                TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another host.", new TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
                                             }
 
                                             //Check for the Scheme to change
@@ -4763,7 +4767,7 @@ namespace Media.Rtsp
 
                                                 if (m_CurrentLocation.Scheme.StartsWith(baseUri.Scheme, StringComparison.OrdinalIgnoreCase).Equals(false))
                                                 {
-                                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another scheme.", new Common.TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
+                                                    TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another scheme.", new TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
                                                 }
                                             }//Check for the port to change
 
@@ -4781,7 +4785,7 @@ namespace Media.Rtsp
                                                 else
                                                 {
                                                     //Throw an exception
-                                                    Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another port.", new Common.TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
+                                                    TaggedExceptionExtensions.RaiseTaggedException(this, "The server issued a response which indicates a required resource from another port.", new TaggedException<RtspMessage>(m_LastTransmitted, "New Host Connection Required. See tag."));
                                                 }
 
                                                 //Return the response as given from the new connection.
@@ -4822,7 +4826,7 @@ namespace Media.Rtsp
                                     else
                                     {
                                         //Could not parse the header...
-                                        Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Cannot parse required header. See tag of InnerException.", new Common.TaggedException<RtspMessage>(m_LastTransmitted, "Cannot parse required header. See tag."));
+                                        TaggedExceptionExtensions.RaiseTaggedException(this, "Cannot parse required header. See tag of InnerException.", new TaggedException<RtspMessage>(m_LastTransmitted, "Cannot parse required header. See tag."));
                                     }
                                 }
                             }
@@ -4832,19 +4836,19 @@ namespace Media.Rtsp
                     }
                 }
             }
-            catch (Common.TaggedException<RtspClient>)
+            catch (TaggedException<RtspClient>)
             {
                 throw;
             }
-            catch (Common.TaggedException<SessionDescription> sde)
+            catch (TaggedException<SessionDescription> sde)
             {
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to describe media, Session Description Exception Occured.", sde);
+                TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to describe media, Session Description Exception Occured.", sde);
             }
             catch (Exception ex)
             {
                 if (ex is Media.Common.ITaggedException) throw ex; 
                 
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "An error occured", ex);
+                TaggedExceptionExtensions.RaiseTaggedException(this, "An error occured", ex);
             }
 
             //Return the response
@@ -4962,7 +4966,7 @@ namespace Media.Rtsp
                     RtspHeaderFields.Connection.Close, 
                     disconnect);
             }
-            catch (Common.TaggedException<RtspClient>)
+            catch (TaggedException<RtspClient>)
             {
                 return response;
             }
@@ -5242,15 +5246,15 @@ namespace Media.Rtsp
                             }
 
                             //Should allow this to be given or set as a property MinimumUdpPort, MaximumUdpPort                        
-                            int openPort = Media.Common.Extensions.Socket.SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, lastPortUsed + 1, true);
+                            int openPort = SocketExtensions.ProbeForOpenPort(ProtocolType.Udp, lastPortUsed + 1, true);
 
-                            if (Common.Binary.NegativeOne.Equals(openPort)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Could not find open Udp Port");
+                            if (Common.Binary.NegativeOne.Equals(openPort)) TaggedExceptionExtensions.RaiseTaggedException(this, "Could not find open Udp Port");
                             //else if (MaximumUdp.HasValue && openPort > MaximumUdp)
                             //{
                             //    Media.Common.Extensions.Exceptions.ExceptionExtensions.CreateAndRaiseException(this, "Found Udp Port > MaximumUdp. Found: " + openPort);
                             //}    
 
-                            rtpTemp = Media.Common.Extensions.Socket.SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address, clientRtpPort = openPort);
+                            rtpTemp = SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address, clientRtpPort = openPort);
 
                             //Check for muxing of rtp and rtcp on the same physical port
                             if (mediaDescription.Where(l => l.Type == Sdp.Lines.SessionAttributeLine.AttributeType && l.Parts.Any(p => p.ToLowerInvariant() == "rtcp-mux")).Any())
@@ -5265,7 +5269,7 @@ namespace Media.Rtsp
                             {
                                 //Should probably check for open port again...
 
-                                rtcpTemp = Media.Common.Extensions.Socket.SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address, (clientRtcpPort = (openPort == ushort.MaxValue || openPort == 0 ? openPort : openPort + 1)));
+                                rtcpTemp = SocketExtensions.ReservePort(SocketType.Dgram, ProtocolType.Udp, ((IPEndPoint)m_RtspSocket.LocalEndPoint).Address, (clientRtcpPort = (openPort == ushort.MaxValue || openPort == 0 ? openPort : openPort + 1)));
                             }
                         }
 
@@ -5377,7 +5381,7 @@ namespace Media.Rtsp
                                 if (string.IsNullOrWhiteSpace(blockSize).Equals(false))
                                 {
                                     //Extract the value (Should account for ';' in some way)
-                                    blockSize = Media.Common.ASCII.ExtractNumber(blockSize.Trim());
+                                    blockSize = ASCII.ExtractNumber(blockSize.Trim());
 
                                     try
                                     {
@@ -5388,12 +5392,12 @@ namespace Media.Rtsp
                                         if (maximumPacketSize > m_Buffer.Count && m_RtspSocket.ProtocolType == ProtocolType.Tcp)
                                         {
                                             //Try to allow processing to resize buffer.
-                                            Media.Common.TaggedExceptionExtensions.RaiseTaggedException(maximumPacketSize, "Media Requires a Larger Buffer. (See Tag for value)");
+                                            TaggedExceptionExtensions.RaiseTaggedException(maximumPacketSize, "Media Requires a Larger Buffer. (See Tag for value)");
                                         }
                                     }
                                     catch (Exception ex)
                                     {
-                                        Media.Common.TaggedExceptionExtensions.RaiseTaggedException(response, "BlockSize of the response needs consideration. (See Tag for response)", ex);
+                                        TaggedExceptionExtensions.RaiseTaggedException(response, "BlockSize of the response needs consideration. (See Tag for response)", ex);
                                     }
                                 }
 
@@ -5425,7 +5429,7 @@ namespace Media.Rtsp
                                     RtspHeaders.TryParseTransportHeader(session.TransportHeader,
                                     out remoteSsrc, out sourceIp, out serverRtpPort, out serverRtcpPort, out clientRtpPort, out clientRtcpPort,
                                     out interleaved, out dataChannel, out controlChannel, out mode, out unicast, out multicast, out destinationIp, out ttl).Equals(false))
-                                        Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Cannot setup media, Invalid Transport Header in Rtsp Response: " + session.TransportHeader);
+                                        TaggedExceptionExtensions.RaiseTaggedException(this, "Cannot setup media, Invalid Transport Header in Rtsp Response: " + session.TransportHeader);
                                 }
 
                                 //If the server returns a channel which is already in use
@@ -5504,7 +5508,7 @@ namespace Media.Rtsp
 
                                     //If the source address contains the NAT IpAddress or the source is the same then just use the source.
                                     if (IPAddress.Equals(sourceIp, ((IPEndPoint)m_RemoteRtsp).Address) ||
-                                        Media.Common.Extensions.IPAddress.IPAddressExtensions.IsOnIntranet(sourceIp))
+                                        IPAddressExtensions.IsOnIntranet(sourceIp))
                                     {
                                         //Create from the existing socket (may need reuse port)
                                         created.Initialize(m_RtspSocket, m_RtspSocket);
@@ -5520,7 +5524,7 @@ namespace Media.Rtsp
                                         //maybe multicast...
 
                                         //Create a new socket's
-                                        created.Initialize(multicast ? Media.Common.Extensions.Socket.SocketExtensions.GetFirstMulticastIPAddress(sourceIp.AddressFamily) : Media.Common.Extensions.Socket.SocketExtensions.GetFirstUnicastIPAddress(sourceIp.AddressFamily),
+                                        created.Initialize(multicast ? SocketExtensions.GetFirstMulticastIPAddress(sourceIp.AddressFamily) : SocketExtensions.GetFirstUnicastIPAddress(sourceIp.AddressFamily),
                                             sourceIp, serverRtpPort); //Might have to come from source string?
 
                                         //Handle ttl if present..
@@ -5536,15 +5540,15 @@ namespace Media.Rtsp
                                             //Store the joined group
                                             if (created.MulticastGroups.Add(destinationIp))
                                             {
-                                                Media.Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(created.RtpSocket, destinationIp);
+                                                SocketExtensions.JoinMulticastGroup(created.RtpSocket, destinationIp);
 
-                                                Media.Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(created.RtpSocket, ttl);
+                                                SocketExtensions.SetMulticastTimeToLive(created.RtpSocket, ttl);
 
                                                 if (false.Equals(created.RtcpSocket.Handle.Equals(created.RtpSocket.Handle)))
                                                 {
-                                                    Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(created.RtcpSocket, destinationIp);
+                                                    SocketExtensions.JoinMulticastGroup(created.RtcpSocket, destinationIp);
 
-                                                    Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(created.RtcpSocket, ttl);
+                                                    SocketExtensions.SetMulticastTimeToLive(created.RtcpSocket, ttl);
                                                 }
                                             }
                                         }
@@ -5619,20 +5623,20 @@ namespace Media.Rtsp
                                     if (multicast &&
                                         // && false == sourceIp.Equals(destinationIp) 
                                         //&& 
-                                        Common.Extensions.IPAddress.IPAddressExtensions.IsMulticast(destinationIp))
+                                        IPAddressExtensions.IsMulticast(destinationIp))
                                     {
                                         //Todo, try, catch...
-                                        Media.Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(created.RtpSocket, destinationIp);
+                                        SocketExtensions.JoinMulticastGroup(created.RtpSocket, destinationIp);
 
                                         created.MulticastGroups.Add(destinationIp);
 
-                                        Media.Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(created.RtpSocket, ttl);
+                                        SocketExtensions.SetMulticastTimeToLive(created.RtpSocket, ttl);
 
                                         if (false.Equals(created.RtcpSocket.Handle == created.RtpSocket.Handle))
                                         {
-                                            Common.Extensions.Socket.SocketExtensions.JoinMulticastGroup(created.RtcpSocket, destinationIp);
+                                            SocketExtensions.JoinMulticastGroup(created.RtcpSocket, destinationIp);
 
-                                            Common.Extensions.Socket.SocketExtensions.SetMulticastTimeToLive(created.RtcpSocket, ttl);
+                                            SocketExtensions.SetMulticastTimeToLive(created.RtcpSocket, ttl);
                                         }
                                     }
 
@@ -5678,7 +5682,7 @@ namespace Media.Rtsp
                             {
                                 if (IsDisposed) return response;
                                 
-                                if (AutomaticallyReconnect.Equals(false)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Connection Aborted or Reset and AutomaticallyReconnect is false.");
+                                if (AutomaticallyReconnect.Equals(false)) TaggedExceptionExtensions.RaiseTaggedException(this, "Connection Aborted or Reset and AutomaticallyReconnect is false.");
 
                                 Reconnect();
 
@@ -5731,7 +5735,7 @@ namespace Media.Rtsp
             }
             catch (Exception ex)
             {
-                Media.Common.TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to setup media. See InnerException", ex);
+                TaggedExceptionExtensions.RaiseTaggedException(this, "Unable to setup media. See InnerException", ex);
 
                 return m_LastTransmitted;
             }
@@ -5893,7 +5897,7 @@ namespace Media.Rtsp
 
             RtpClient.TransportContext context = Client.GetContextForMediaDescription(mediaDescription);
 
-            if (Common.IDisposedExtensions.IsNullOrDisposed(context)) Media.Common.TaggedExceptionExtensions.RaiseTaggedException(context, "The given mediaDescription has not been SETUP or is disposed. See Tag for context.");
+            if (Common.IDisposedExtensions.IsNullOrDisposed(context)) TaggedExceptionExtensions.RaiseTaggedException(context, "The given mediaDescription has not been SETUP or is disposed. See Tag for context.");
 
             //Check if the media was previsouly playing
             if (false.Equals(Common.IDisposedExtensions.IsNullOrDisposed(context)) && 
@@ -6589,7 +6593,7 @@ namespace Media.Rtsp
 
         public override string ToString()
         {
-            return string.Join(((char)Common.ASCII.HyphenSign).ToString(), base.ToString(), InternalId);
+            return string.Join(((char)ASCII.HyphenSign).ToString(), base.ToString(), InternalId);
         }
 
         #endregion

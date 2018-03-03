@@ -36,12 +36,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #endregion
 
+using Media.Common.Classes.Disposables;
+
 namespace Media.Rtsp
 {
     /// <summary>
     /// Represents the resources in use by each Session created (during SETUP)
     /// </summary>
-    internal class RtspSession : Common.SuppressedFinalizerDisposable
+    internal class RtspSession : SuppressedFinalizerDisposable
     {
 
         #region Fields

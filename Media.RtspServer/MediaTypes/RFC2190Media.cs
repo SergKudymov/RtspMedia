@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Media;
 
 namespace Media.Rtsp.Server.MediaTypes
 {
@@ -92,7 +93,7 @@ namespace Media.Rtsp.Server.MediaTypes
         /// Packetize's an Image for Sending
         /// </summary>
         /// <param name="image">The Image to Encode and Send</param>
-        public override void Packetize(System.Drawing.Image image)
+        public override void Packetize(Image image)
         {
             throw new NotImplementedException();
         }

@@ -42,6 +42,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Media.Common.Classes.Disposables;
 
 #endregion
 
@@ -50,7 +51,7 @@ namespace Media.Container
     /// <summary>
     /// Represents a superset of binary data within a <see cref="IMediaContainer"/>.
     /// </summary>
-    public class Node : Common.BaseDisposable
+    public class Node : BaseDisposable
     {
         #region Static API
 

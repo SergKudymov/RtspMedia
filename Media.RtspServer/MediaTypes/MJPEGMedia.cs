@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using Media.Rtsp.Server.MediaTypes;
 
-namespace Media.Rtsp.Server.MediaTypes
+namespace Media.RtspServer.MediaTypes
 {
-    using System;
-    using System.Drawing;
-    using System.IO;
-    using System.Text;
-    using System.Threading;
-    using System.Net;
-    using System.Security;
-
     /// <summary>
     /// MJPEG video source.
     /// </summary>

@@ -53,7 +53,7 @@ namespace Media.Sdp
         /// </summary>
         public class SessionAttributeLine : SessionDescriptionLine
         {
-            internal const char AttributeType = 'a';
+            public const char AttributeType = 'a';
 
             /// <summary>
             /// Gets the parts of the attribute such as the name and value / type.

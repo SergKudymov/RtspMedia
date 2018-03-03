@@ -2548,7 +2548,7 @@ namespace Media.Rtsp.Server.MediaTypes
         /// <param name="image">The Image to Encode and Send</param>
         /// <param name="quality">The quality of the encoded image, 100 specifies the quantization tables are sent in band</param>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.Synchronized)]
-        public virtual void Packetize(System.Drawing.Image image)
+        public virtual void Packetize(Image image)
         {
             try
             {

@@ -59,6 +59,10 @@
       <Project>{BD0A85B0-60E1-4CB8-AA7A-CC73708059F1}</Project>
       <Name>Media.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Media.Sdp\Media.Sdp.csproj">
+      <Project>{3e390a6b-6509-41e9-a484-b398400667b0}</Project>
+      <Name>Media.Sdp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

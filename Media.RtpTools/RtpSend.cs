@@ -39,6 +39,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Java.Lang.Ref;
+using Media.Common.Classes.Text;
+using Media.Common.Extensions;
+using Media.Rtcp;
+using Media.Rtp;
+using Media.Rtp.Rtcp;
 
 namespace Media.RtpTools
 {
@@ -391,7 +397,7 @@ namespace Media.RtpTools
                             packet.Padding ? 1.ToString() : 0.ToString(),
                             packet.BlockCount,
                             packet.Header.LengthInWordsMinusOne,
-                            (ToTextualConvention(sr) + (char)Common.ASCII.Space + string.Format(RtcpSendersInformationFormat,
+                            (ToTextualConvention(sr) + (char)ASCII.Space + string.Format(RtcpSendersInformationFormat,
                             //0
                                 (DateTime.UtcNow - sr.NtpDateTime).TotalSeconds.ToString("0.000000"), //ts=
                             //1
@@ -434,7 +440,7 @@ namespace Media.RtpTools
         /// </summary>
         /// <param name="reportBlocks">The blocks to describe</param>
         /// <returns>The string which describes the given blocks.</returns>
-        internal static string ToTextualConvention(IEnumerable<Rtcp.IReportBlock> reportBlocks) 
+        internal static string ToTextualConvention(IEnumerable<IReportBlock> reportBlocks) 
         {
             string blockString = string.Empty;
 
@@ -442,7 +448,7 @@ namespace Media.RtpTools
 
             //Build the block string for each block in the report
             foreach (Rtcp.ReportBlock reportBlock in reportBlocks)
-                blockString += (char)Common.ASCII.Space + string.Format(RtcpReportBlockFormat, 
+                blockString += (char)ASCII.Space + string.Format(RtcpReportBlockFormat, 
                     reportBlock.SendersSynchronizationSourceIdentifier, 
                     reportBlock.FractionsLost, 
                     reportBlock.CumulativePacketsLost, 
@@ -477,11 +483,11 @@ namespace Media.RtpTools
                 foreach (Media.Rtcp.SourceDescriptionReport.SourceDescriptionItem item in chunk)
                 {
                     //Add Whitespace delimiter
-                    if (++countMinus1 > 0) itemStringBuilder.Append((char)Common.ASCII.Space);
+                    if (++countMinus1 > 0) itemStringBuilder.Append((char)ASCII.Space);
 
                     string typedName = Enum.GetName(typeof(Rtcp.SourceDescriptionReport.SourceDescriptionItem.SourceDescriptionItemType), item.ItemType);
 
-                    if (string.IsNullOrWhiteSpace(typedName)) typedName = Media.Common.Extensions.String.StringExtensions.UnknownString;
+                    if (string.IsNullOrWhiteSpace(typedName)) typedName = StringExtensions.UnknownString;
 
                     itemStringBuilder.AppendFormat(QuotedFormat,
                         //0
@@ -490,7 +496,7 @@ namespace Media.RtpTools
                         Encoding.ASCII.GetString(item.ItemData.ToArray()));
                 }
 
-                blockStringBuilder.Append((char)Common.ASCII.LineFeed);
+                blockStringBuilder.Append((char)ASCII.LineFeed);
 
                 blockStringBuilder.AppendFormat(SourceDescriptionChunkFormat,
                     chunk.ChunkIdentifer,
@@ -513,9 +519,9 @@ namespace Media.RtpTools
             //Write each entry in bye.GetSourceList
             using (var sourceList = bye.GetSourceList())
             {
-                if (sourceList == null) blockString += "#Incomplete Source List Not Included" + (char)Common.ASCII.LineFeed;
+                if (sourceList == null) blockString += "#Incomplete Source List Not Included" + (char)ASCII.LineFeed;
                 else foreach (uint partyId in sourceList)//ssrc=
-                        blockString += string.Format(HexFormat, "ssrc", HexSpecifier + partyId.ToString("X"), (char)Common.ASCII.LineFeed);
+                        blockString += string.Format(HexFormat, "ssrc", HexSpecifier + partyId.ToString("X"), (char)ASCII.LineFeed);
             }
 
             return blockString;
@@ -568,8 +574,8 @@ namespace Media.RtpTools
 
             //hex dump
             if (format == FileFormat.Hex)
-                if (totalLength > 0) builder.Append(string.Format(HexFormat, "data", hexPayload, (char)Common.ASCII.LineFeed));
-                else builder.Append(string.Format(HexFormat, "data", NullSpecifier, (char)Common.ASCII.LineFeed));
+                if (totalLength > 0) builder.Append(string.Format(HexFormat, "data", hexPayload, (char)ASCII.LineFeed));
+                else builder.Append(string.Format(HexFormat, "data", NullSpecifier, (char)ASCII.LineFeed));
 
             //Return the allocated result
             return builder.ToString();
@@ -649,18 +655,11 @@ namespace Media.RtpTools
 
                 using (Media.RFC3550.SourceList sl = new Media.RFC3550.SourceList(packet))
                 {
-
-                    if (sl == null)
-                    {
-                        builder.Append("#Incomplete Source List Not Included");
-                        builder.Append((char)Common.ASCII.LineFeed);
-                    }
-                    else
                     {
                         //csrc=
                         while (sl.MoveNext())
                         {
-                            builder.Append(string.Format(RtpSend.HexFormat, "csrc", HexSpecifier, sl.CurrentSource.ToString("X"), (char)Common.ASCII.LineFeed));
+                            builder.Append(string.Format(RtpSend.HexFormat, "csrc", HexSpecifier, sl.CurrentSource.ToString("X"), (char)ASCII.LineFeed));
                         }
                     }
                 }
@@ -675,16 +674,16 @@ namespace Media.RtpTools
                     if (rtpExtension == null)
                     {
                         builder.Append("#Incomplete Extension Not Included");
-                        builder.Append((char)Common.ASCII.LineFeed);
+                        builder.Append((char)ASCII.LineFeed);
                     }
                     else
                     {
-                        builder.Append(string.Format(RtpSend.HexFormat, "ext_type", HexSpecifier + rtpExtension.Flags.ToString("X"), (char)Common.ASCII.LineFeed));
+                        builder.Append(string.Format(RtpSend.HexFormat, "ext_type", HexSpecifier + rtpExtension.Flags.ToString("X"), (char)ASCII.LineFeed));
 
                         builder.Append(string.Format(RtpSend.NonQuotedFormat, "ext_len", rtpExtension.LengthInWords));
-                        builder.Append((char)Common.ASCII.LineFeed);
+                        builder.Append((char)ASCII.LineFeed);
 
-                        builder.Append(string.Format(RtpSend.HexFormat, "ext_data",  BitConverter.ToString(rtpExtension.Data.ToArray()).Replace("-", string.Empty), (char)Common.ASCII.LineFeed));
+                        builder.Append(string.Format(RtpSend.HexFormat, "ext_data",  BitConverter.ToString(rtpExtension.Data.ToArray()).Replace("-", string.Empty), (char)ASCII.LineFeed));
                     }
                 }
             }
@@ -693,8 +692,8 @@ namespace Media.RtpTools
             if (format == FileFormat.Hex)
             {
                 var data = packet.PayloadData;
-                if (data.Any()) builder.Append(string.Format(RtpSend.HexFormat, "data", BitConverter.ToString(data.ToArray()).Replace("-", string.Empty), (char)Common.ASCII.LineFeed));
-                else builder.Append(string.Format(HexFormat, "data", NullSpecifier, (char)Common.ASCII.LineFeed));
+                if (data.Any()) builder.Append(string.Format(RtpSend.HexFormat, "data", BitConverter.ToString(data.ToArray()).Replace("-", string.Empty), (char)ASCII.LineFeed));
+                else builder.Append(string.Format(HexFormat, "data", NullSpecifier, (char)ASCII.LineFeed));
             }
 
             //Return the result
@@ -774,7 +773,7 @@ namespace Media.RtpTools
                     format = FileFormat.Unknown;
                     return null;
                 }
-                else if (peek == RtpDump.RtpDumpExtensions.Hash || peek == (char)Common.ASCII.Space)
+                else if (peek == RtpDump.RtpDumpExtensions.Hash || peek == (char)ASCII.Space)
                 {
                     //Comment lines start with # (Hash). Strings are enclosed in quotation marks.
                     parsingCommentOrWhitespace = true;
@@ -819,7 +818,7 @@ namespace Media.RtpTools
 
                     //Search for '='
 
-                    tokenIndex = Array.IndexOf<byte>(lineBytes, Common.ASCII.EqualsSign);
+                    tokenIndex = Array.IndexOf<byte>(lineBytes, ASCII.EqualsSign);
 
                     //If not found then this must be a Short entry.
                     if (tokenIndex == -1)
@@ -854,7 +853,7 @@ namespace Media.RtpTools
                 {
 
                     //Extract all tokens from the lineBytes
-                    string[] tokens = Encoding.ASCII.GetString(lineBytes).Split((char)Common.ASCII.Space, (char)Common.ASCII.EqualsSign, '(', ')');
+                    string[] tokens = Encoding.ASCII.GetString(lineBytes).Split((char)ASCII.Space, (char)ASCII.EqualsSign, '(', ')');
 
                     //Any hex data will need a length, and we start at offset 0.
                     int dataLen = 0, tokenOffset = 0;
@@ -922,7 +921,7 @@ namespace Media.RtpTools
                             case 38: //from
                                 {
 
-                                    string[] parts = tokens[++tokenOffset].Split((char)Common.ASCII.Colon);
+                                    string[] parts = tokens[++tokenOffset].Split((char)ASCII.Colon);
 
                                     System.Net.IPAddress ip = System.Net.IPAddress.Parse(parts[0]);
 
@@ -1199,7 +1198,7 @@ namespace Media.RtpTools
         internal static void ReadLineFeed(System.IO.Stream stream, out byte[] result)
         {
             //The length of the array allocated is known and should also be returned...
-            result = RtpDump.RtpDumpExtensions.ReadDelimitedValue(stream, Common.ASCII.LineFeed, true);
+            result = RtpDump.RtpDumpExtensions.ReadDelimitedValue(stream, ASCII.LineFeed, true);
         }
     }
 }
